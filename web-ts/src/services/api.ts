@@ -2,7 +2,7 @@ import axios from 'axios';
 import { Task, CurrentTask, Settings, ApiResponse } from '../types';
 
 // Базовий URL для API
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
 // Створюємо екземпляр axios з базовими налаштуваннями
 const api = axios.create({
@@ -12,78 +12,126 @@ const api = axios.create({
   },
 });
 
-// Сервіс для роботи з задачами
+// Допоміжна функція для обробки відповіді
+async function handleResponse<T>(response: Response): Promise<T> {
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || 'Помилка запиту до сервера');
+  }
+  
+  const data: ApiResponse<T> = await response.json();
+  return data.data;
+}
+
+// Tasks API
+export async function fetchTasks(): Promise<Task[]> {
+  const response = await fetch(`${API_URL}/tasks`);
+  return handleResponse<Task[]>(response);
+}
+
+export async function createTask(task: Omit<Task, 'id'>): Promise<Task> {
+  const response = await fetch(`${API_URL}/tasks`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(task),
+  });
+  
+  return handleResponse<Task>(response);
+}
+
+export async function updateTask(taskId: number, task: Partial<Task>): Promise<Task> {
+  const response = await fetch(`${API_URL}/tasks/${taskId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(task),
+  });
+  
+  return handleResponse<Task>(response);
+}
+
+export async function deleteTask(taskId: number): Promise<void> {
+  const response = await fetch(`${API_URL}/tasks/${taskId}`, {
+    method: 'DELETE',
+  });
+  
+  return handleResponse<void>(response);
+}
+
+// Current Task API
+export async function fetchCurrentTasks(): Promise<CurrentTask[]> {
+  const response = await fetch(`${API_URL}/current-tasks`);
+  return handleResponse<CurrentTask[]>(response);
+}
+
+export async function fetchCurrentTask(taskId: number): Promise<CurrentTask> {
+  const response = await fetch(`${API_URL}/current-tasks/${taskId}`);
+  return handleResponse<CurrentTask>(response);
+}
+
+export async function createCurrentTask(task: Omit<CurrentTask, 'id' | 'created_at'>): Promise<CurrentTask> {
+  const response = await fetch(`${API_URL}/current-tasks`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(task),
+  });
+  
+  return handleResponse<CurrentTask>(response);
+}
+
+export async function deleteCurrentTask(taskId: number): Promise<void> {
+  const response = await fetch(`${API_URL}/current-tasks/${taskId}`, {
+    method: 'DELETE',
+  });
+  
+  return handleResponse<void>(response);
+}
+
+export const sendToTelegram = async (id: number): Promise<void> => {
+  await api.post(`/current_task/${id}/send`);
+};
+
+// Settings API
+export async function fetchSettings(): Promise<Settings> {
+  const response = await fetch(`${API_URL}/settings`);
+  return handleResponse<Settings>(response);
+}
+
+export async function updateSettings(settings: Settings): Promise<Settings> {
+  const response = await fetch(`${API_URL}/settings`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(settings),
+  });
+  
+  return handleResponse<Settings>(response);
+}
+
+// Legacy services for backward compatibility
 export const TaskService = {
-  // Отримання всіх задач
-  getTasks: async (): Promise<Task[]> => {
-    const response = await api.get<{ tasks: Task[] }>('/api/tasks');
-    return response.data.tasks;
-  },
-
-  // Додавання нової задачі
-  addTask: async (title: string, date?: string, time?: string): Promise<ApiResponse<Task>> => {
-    const formData = new FormData();
-    formData.append('title', title);
-    if (date) formData.append('date', date);
-    if (time) formData.append('time', time);
-
-    const response = await api.post<ApiResponse<Task>>('/add_task', formData);
-    return response.data;
-  },
+  getTasks: fetchTasks,
+  createTask,
+  updateTask,
+  deleteTask,
 };
 
-// Сервіс для роботи з поточними задачами
 export const CurrentTaskService = {
-  // Отримання всіх поточних задач
-  getCurrentTasks: async (): Promise<CurrentTask[]> => {
-    const response = await api.get<{ current_tasks: CurrentTask[] }>('/api/current-tasks');
-    return response.data.current_tasks;
-  },
-
-  // Додавання нової поточної задачі
-  addCurrentTask: async (note: string): Promise<ApiResponse<CurrentTask>> => {
-    const formData = new FormData();
-    formData.append('note', note);
-
-    const response = await api.post<ApiResponse<CurrentTask>>('/add_current', formData);
-    return response.data;
-  },
-
-  // Надсилання поточних задач в Telegram
-  sendToTelegram: async (): Promise<ApiResponse<null>> => {
-    const response = await api.post<ApiResponse<null>>('/send_to_telegram');
-    return response.data;
-  },
+  getCurrentTasks: fetchCurrentTasks,
+  createCurrentTask,
+  deleteCurrentTask,
+  sendToTelegram,
 };
 
-// Сервіс для роботи з налаштуваннями
 export const SettingsService = {
-  // Отримання налаштувань
-  getSettings: async (): Promise<Settings> => {
-    const response = await api.get<Settings>('/settings');
-    return response.data;
-  },
+  getSettings: fetchSettings,
+  updateSettings,
+};
 
-  // Збереження налаштувань Telegram
-  saveTelegramSettings: async (botToken: string, chatId: string): Promise<ApiResponse<Settings>> => {
-    const formData = new FormData();
-    formData.append('bot_token', botToken);
-    formData.append('chat_id', chatId);
-
-    const response = await api.post<ApiResponse<Settings>>('/save_telegram_settings', formData);
-    return response.data;
-  },
-
-  // Збереження налаштувань сповіщень
-  saveNotificationSettings: async (
-    enableNotifications: boolean,
-    notificationTime: number
-  ): Promise<ApiResponse<Settings>> => {
-    const formData = new FormData();
-    if (enableNotifications) formData.append('enable_notifications', 'on');
-    formData.append('notification_time', notificationTime.toString());
-
-    const response = await api.post<ApiResponse<Settings>>('/save_notification_settings', formData);
-    return response.data;
-  },
-}; 
+export default api; 

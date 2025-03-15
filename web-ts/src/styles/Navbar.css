@@ -1,60 +1,236 @@
 .navbar {
   background-color: var(--primary-color);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   position: sticky;
   top: 0;
-  z-index: 1000;
+  z-index: 100;
 }
 
 .navbar-container {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 var(--spacing-md);
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
   height: 64px;
 }
 
-.navbar-brand {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--text-on-primary);
+.navbar-logo {
+  display: flex;
+  align-items: center;
+  color: white;
   text-decoration: none;
-  transition: opacity 0.3s ease;
+  font-weight: 700;
+  font-size: 1.3rem;
+  transition: opacity 0.2s;
 }
 
-.navbar-brand:hover {
+.navbar-logo:hover {
   opacity: 0.9;
 }
 
-.navbar-nav {
+.navbar-logo-icon {
+  margin-right: 10px;
+  font-size: 1.5rem;
+}
+
+.navbar-menu {
   display: flex;
   list-style: none;
+  margin: 0;
+  padding: 0;
 }
 
-.nav-item {
-  margin-left: var(--spacing-lg);
+.navbar-item {
+  margin-left: 16px;
 }
 
-.nav-link {
-  color: var(--text-on-primary);
+.navbar-link {
+  display: flex;
+  align-items: center;
+  color: rgba(255, 255, 255, 0.9);
   text-decoration: none;
-  font-weight: 500;
-  padding: var(--spacing-xs) var(--spacing-sm);
+  padding: 8px 12px;
   border-radius: var(--border-radius);
-  transition: background-color 0.3s ease;
+  transition: background-color 0.2s;
 }
 
-.nav-link:hover {
+.navbar-link:hover {
   background-color: rgba(255, 255, 255, 0.1);
 }
 
-.nav-link.active {
+.navbar-link.active {
+  background-color: rgba(255, 255, 255, 0.2);
+  color: white;
+  font-weight: 600;
+}
+
+.navbar-link-icon {
+  margin-right: 8px;
+}
+
+.navbar-toggle {
+  background: none;
+  border: none;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+}
+
+.navbar-toggle-icon {
+  position: relative;
+  width: 24px;
+  height: 2px;
+  background-color: white;
+  transition: all 0.3s;
+}
+
+.navbar-toggle-icon::before,
+.navbar-toggle-icon::after {
+  content: '';
+  position: absolute;
+  width: 24px;
+  height: 2px;
+  background-color: white;
+  transition: all 0.3s;
+}
+
+.navbar-toggle-icon::before {
+  transform: translateY(-8px);
+}
+
+.navbar-toggle-icon::after {
+  transform: translateY(8px);
+}
+
+.navbar-toggle-icon.open {
+  background-color: transparent;
+}
+
+.navbar-toggle-icon.open::before {
+  transform: rotate(45deg);
+}
+
+.navbar-toggle-icon.open::after {
+  transform: rotate(-45deg);
+}
+
+.mobile-menu {
+  position: fixed;
+  top: 64px;
+  left: 0;
+  right: 0;
+  background-color: var(--primary-color);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  z-index: 99;
+  animation: slideDown 0.3s ease-out;
+}
+
+.mobile-menu-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.mobile-menu-item {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.mobile-menu-link {
+  display: flex;
+  align-items: center;
+  color: white;
+  text-decoration: none;
+  padding: 16px 20px;
+  transition: background-color 0.2s;
+}
+
+.mobile-menu-link:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.mobile-menu-link.active {
+  background-color: rgba(255, 255, 255, 0.2);
+  font-weight: 600;
+}
+
+.mobile-menu-icon {
+  margin-right: 12px;
+  font-size: 1.2rem;
+}
+
+.mobile-navbar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: var(--primary-color);
+  display: flex;
+  justify-content: space-around;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+  z-index: 100;
+}
+
+.mobile-navbar-link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+  padding: 12px 0;
+  flex: 1;
+  transition: background-color 0.2s;
+}
+
+.mobile-navbar-link:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.mobile-navbar-link.active {
+  color: white;
   background-color: rgba(255, 255, 255, 0.2);
 }
 
-/* Адаптивний дизайн */
+.mobile-navbar-icon {
+  font-size: 1.5rem;
+  margin-bottom: 4px;
+}
+
+.mobile-navbar-text {
+  font-size: 0.8rem;
+}
+
+@keyframes slideDown {
+  from { transform: translateY(-100%); }
+  to { transform: translateY(0); }
+}
+
+/* Адаптивність для мобільних пристроїв */
 @media (max-width: 768px) {
-  .navbar-nav {
-    display: none;
+  .navbar-container {
+    height: 56px;
+  }
+  
+  .navbar-logo {
+    font-size: 1.2rem;
+  }
+  
+  .navbar-logo-icon {
+    font-size: 1.3rem;
+  }
+  
+  .mobile-menu {
+    top: 56px;
+  }
+  
+  /* Додаємо відступ знизу для контенту, щоб він не ховався за мобільною навігацією */
+  body {
+    padding-bottom: 60px;
   }
 } 

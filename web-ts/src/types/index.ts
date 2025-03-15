@@ -2,29 +2,39 @@
 export interface Task {
   id: number;
   title: string;
-  date: string | null;
-  time: string | null;
+  description?: string;
+  date: string;
+  time?: string;
+  completed: boolean;
+  priority?: 'HIGH' | 'MEDIUM' | 'LOW';
 }
 
 // Тип для поточної задачі
 export interface CurrentTask {
   id: number;
-  note: string;
+  title: string;
+  description?: string;
+  date?: string;
+  time?: string;
+  created_at: string;
 }
 
 // Тип для налаштувань
 export interface Settings {
   telegram_bot_token: string;
   telegram_chat_id: string;
+  enable_notifications: boolean;
   notification_time: number;
-  notifications_enabled: boolean;
-  task_notifications: boolean;
-  current_tasks_notifications: boolean;
 }
 
 // Тип для відповіді API
 export interface ApiResponse<T> {
-  success: boolean;
-  message?: string;
-  data?: T;
+  message: string;
+  data: T;
+}
+
+export interface TaskFormProps {
+  task?: Task | null;
+  onClose: () => void;
+  onSubmit: () => void;
 } 

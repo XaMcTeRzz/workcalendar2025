@@ -1,131 +1,159 @@
 import React, { useState, useEffect } from 'react';
-import TaskForm from '../components/TaskForm';
-import CurrentTaskForm from '../components/CurrentTaskForm';
-import { TaskService, CurrentTaskService } from '../services/api';
 import { Task, CurrentTask } from '../types';
+import { fetchTasks, fetchCurrentTasks, deleteTask, updateTask } from '../services/api';
+import TaskForm from '../components/TaskForm';
+import TaskList from '../components/TaskList';
+import CurrentTaskList from '../components/CurrentTaskList';
 import '../styles/HomePage.css';
 
 const HomePage: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [currentTasks, setCurrentTasks] = useState<CurrentTask[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-
-  const fetchData = async () => {
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const [tasksData, currentTasksData] = await Promise.all([
-        TaskService.getTasks(),
-        CurrentTaskService.getCurrentTasks()
-      ]);
-
-      setTasks(tasksData);
-      setCurrentTasks(currentTasksData);
-    } catch (err) {
-      setError('Помилка при завантаженні даних. Спробуйте оновити сторінку.');
-      console.error(err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const [showAddForm, setShowAddForm] = useState<boolean>(false);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
 
   useEffect(() => {
-    fetchData();
+    loadData();
   }, []);
 
-  const handleTaskAdded = () => {
-    fetchData();
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      const [tasksData, currentTasksData] = await Promise.all([
+        fetchTasks(),
+        fetchCurrentTasks()
+      ]);
+      
+      setTasks(tasksData);
+      setCurrentTasks(currentTasksData);
+      setError(null);
+    } catch (err) {
+      setError('Помилка завантаження даних. Спробуйте оновити сторінку.');
+      console.error('Error loading data:', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const formatDateTime = (date: string | null, time: string | null) => {
-    if (!date) return '';
-    
-    let result = date;
-    if (time) {
-      result += ` о ${time}`;
+  const handleAddTask = () => {
+    setEditingTask(null);
+    setShowAddForm(true);
+  };
+
+  const handleEditTask = (task: Task) => {
+    setEditingTask(task);
+    setShowAddForm(true);
+  };
+
+  const handleDeleteTask = async (taskId: number) => {
+    try {
+      await deleteTask(taskId);
+      setTasks(tasks.filter(task => task.id !== taskId));
+    } catch (err) {
+      setError('Помилка видалення задачі. Спробуйте ще раз.');
+      console.error('Error deleting task:', err);
     }
-    
-    return result;
+  };
+
+  const handleTaskFormClose = () => {
+    setShowAddForm(false);
+    setEditingTask(null);
+  };
+
+  const handleTaskFormSubmit = () => {
+    setShowAddForm(false);
+    setEditingTask(null);
+    loadData();
+  };
+
+  const handleTaskComplete = async (taskId: number, completed: boolean) => {
+    try {
+      const task = tasks.find(t => t.id === taskId);
+      if (!task) return;
+      
+      const updatedTask = { ...task, completed };
+      await updateTask(taskId, updatedTask);
+      
+      setTasks(tasks.map(t => 
+        t.id === taskId ? { ...t, completed } : t
+      ));
+    } catch (err) {
+      setError('Помилка оновлення статусу задачі. Спробуйте ще раз.');
+      console.error('Error updating task status:', err);
+    }
   };
 
   return (
     <div className="home-page">
-      <div className="row">
-        <div className="col-md-6">
-          <div className="card">
-            <div className="card-header">
-              Заплановані задачі
-            </div>
-            <div className="card-body">
-              <TaskForm onTaskAdded={handleTaskAdded} />
-              
-              <h3 className="section-title">Список задач</h3>
-              
-              {isLoading ? (
-                <div className="loading">Завантаження...</div>
-              ) : error ? (
-                <div className="error-message">{error}</div>
-              ) : tasks.length === 0 ? (
-                <div className="empty-message">Немає запланованих задач</div>
-              ) : (
-                <ul className="task-list">
-                  {tasks.map((task) => (
-                    <li key={task.id} className="task-item">
-                      <div>
-                        <div className="task-title">{task.title}</div>
-                        {(task.date || task.time) && (
-                          <div className="task-date">
-                            {formatDateTime(task.date, task.time)}
-                          </div>
-                        )}
-                      </div>
-                      <div className="task-actions">
-                        <button className="task-action-btn">✏️</button>
-                        <button className="task-action-btn">🗑️</button>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          </div>
-        </div>
-        
-        <div className="col-md-6">
-          <div className="card">
-            <div className="card-header">
-              Поточні задачі
-            </div>
-            <div className="card-body">
-              <CurrentTaskForm onTaskAdded={handleTaskAdded} />
-              
-              <h3 className="section-title">Список поточних задач</h3>
-              
-              {isLoading ? (
-                <div className="loading">Завантаження...</div>
-              ) : error ? (
-                <div className="error-message">{error}</div>
-              ) : currentTasks.length === 0 ? (
-                <div className="empty-message">Немає поточних задач</div>
-              ) : (
-                <ul className="task-list">
-                  {currentTasks.map((task) => (
-                    <li key={task.id} className="task-item">
-                      <div className="task-title">{task.note}</div>
-                      <div className="task-actions">
-                        <button className="task-action-btn">✏️</button>
-                        <button className="task-action-btn">🗑️</button>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          </div>
-        </div>
+      <div className="page-header">
+        <h1 className="page-title">
+          <span className="page-title-icon">📅</span>
+          Календар задач
+        </h1>
+        <button 
+          className="btn-add" 
+          onClick={handleAddTask}
+          aria-label="Додати нову задачу"
+        >
+          <span className="btn-icon">+</span>
+          <span className="btn-text">Додати задачу</span>
+        </button>
       </div>
+
+      {error && <div className="error-message">{error}</div>}
+
+      {loading ? (
+        <div className="loading">Завантаження даних...</div>
+      ) : (
+        <div className="content-container">
+          <div className="tasks-container">
+            <div className="section-header">
+              <h2 className="section-title">
+                <span className="section-icon">📋</span>
+                Заплановані задачі
+              </h2>
+            </div>
+            <TaskList 
+              tasks={tasks} 
+              onEdit={handleEditTask} 
+              onDelete={handleDeleteTask}
+              onComplete={handleTaskComplete}
+            />
+          </div>
+
+          <div className="current-tasks-container">
+            <div className="section-header">
+              <h2 className="section-title">
+                <span className="section-icon">⏰</span>
+                Поточні задачі
+              </h2>
+            </div>
+            <CurrentTaskList currentTasks={currentTasks} />
+          </div>
+        </div>
+      )}
+
+      {showAddForm && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <TaskForm 
+              task={editingTask} 
+              onClose={handleTaskFormClose} 
+              onSubmit={handleTaskFormSubmit}
+            />
+          </div>
+        </div>
+      )}
+
+      <button 
+        className="fab" 
+        onClick={handleAddTask}
+        aria-label="Додати нову задачу"
+      >
+        <span className="fab-icon">+</span>
+      </button>
     </div>
   );
 };
