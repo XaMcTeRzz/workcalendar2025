@@ -1,13 +1,14 @@
 .task-form-container {
   background-color: #fff;
-  border-radius: 12px;
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+  border-radius: var(--border-radius-lg, 12px);
+  box-shadow: var(--shadow, 0 5px 20px rgba(0, 0, 0, 0.15));
   max-width: 600px;
   width: 100%;
   padding: 25px;
   position: relative;
   overflow: hidden;
   animation: slideUp 0.3s ease-out;
+  margin: 0 auto; /* Центрирование на больших экранах */
 }
 
 .task-form-header {
@@ -36,10 +37,17 @@
   padding: 0;
   margin: 0;
   transition: color 0.2s;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
 }
 
 .close-button:hover {
   color: #f44336;
+  background-color: rgba(0, 0, 0, 0.05);
 }
 
 .task-form {
@@ -65,7 +73,7 @@
 .form-group select {
   padding: 12px 15px;
   border: 1px solid #ddd;
-  border-radius: 8px;
+  border-radius: var(--border-radius, 8px);
   font-size: 15px;
   transition: all 0.3s;
 }
@@ -73,7 +81,7 @@
 .form-group input:focus,
 .form-group textarea:focus,
 .form-group select:focus {
-  border-color: #3498db;
+  border-color: var(--primary-color, #3498db);
   box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
   outline: none;
 }
@@ -102,7 +110,7 @@
 .form-check input[type="checkbox"] {
   width: 18px;
   height: 18px;
-  accent-color: #3498db;
+  accent-color: var(--primary-color, #3498db);
 }
 
 .form-check label {
@@ -130,7 +138,7 @@
 
 .btn {
   padding: 10px 20px;
-  border-radius: 8px;
+  border-radius: var(--border-radius, 8px);
   font-size: 15px;
   font-weight: 500;
   cursor: pointer;
@@ -148,12 +156,12 @@
 }
 
 .btn-primary {
-  background-color: #3498db;
+  background-color: var(--primary-color, #3498db);
   color: white;
 }
 
 .btn-primary:hover:not(:disabled) {
-  background-color: #2980b9;
+  background-color: var(--primary-dark, #2980b9);
 }
 
 .btn-secondary {
@@ -188,16 +196,55 @@
   }
 }
 
-/* Мобильные стили */
-@media (max-width: 768px) {
+/* Планшеты */
+@media (max-width: 1024px) {
   .task-form-container {
+    max-width: 90%;
     padding: 20px;
-    max-width: 100%;
-    border-radius: 10px;
   }
   
   .task-form-header h2 {
     font-size: 1.3rem;
+  }
+  
+  .form-group label {
+    font-size: 14px;
+  }
+  
+  .form-group input,
+  .form-group textarea,
+  .form-group select {
+    padding: 10px 12px;
+  }
+  
+  .btn {
+    padding: 10px 15px;
+    font-size: 14px;
+  }
+}
+
+/* Мобильные устройства */
+@media (max-width: 768px) {
+  .task-form-container {
+    padding: 20px;
+    max-width: 100%;
+    border-radius: var(--border-radius, 10px);
+    margin-bottom: 20px;
+  }
+  
+  .task-form-header {
+    margin-bottom: 15px;
+    padding-bottom: 12px;
+  }
+  
+  .task-form-header h2 {
+    font-size: 1.2rem;
+  }
+  
+  .close-button {
+    font-size: 1.5rem;
+    width: 35px;
+    height: 35px;
   }
   
   .form-row {
@@ -217,12 +264,25 @@
     padding: 10px 15px;
     font-size: 14px;
   }
+  
+  .task-form {
+    gap: 15px;
+  }
 }
 
-/* Маленькие экраны */
+/* Маленькие мобильные устройства */
 @media (max-width: 480px) {
   .task-form-container {
     padding: 15px;
+    border-radius: var(--border-radius, 8px);
+  }
+  
+  .task-form-header h2 {
+    font-size: 1.1rem;
+  }
+  
+  .task-form {
+    gap: 12px;
   }
   
   .form-actions {
@@ -238,6 +298,7 @@
   .input-voice-container {
     flex-direction: column;
     gap: 5px;
+    align-items: flex-start;
   }
   
   .input-voice-container .voice-input-container {
@@ -246,5 +307,36 @@
   
   .input-voice-container .voice-input-button {
     width: 100%;
+    justify-content: center;
+  }
+  
+  .form-group {
+    gap: 6px;
+  }
+  
+  .form-group label {
+    font-size: 13px;
+  }
+  
+  .form-check input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+/* Ландшафтная ориентация на мобильных */
+@media (orientation: landscape) and (max-width: 900px) {
+  .task-form-container {
+    max-width: 90%;
+    max-height: 85vh;
+    overflow-y: auto;
+  }
+  
+  .form-row {
+    flex-direction: row;
+  }
+  
+  .form-actions {
+    flex-direction: row;
   }
 } 

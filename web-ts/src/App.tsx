@@ -1,77 +1,104 @@
-import React, { useState, useEffect, createContext } from 'react';
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import React, { useState, useEffect, createContext, useMemo } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import HomePage from './pages/HomePage';
+import TaskPage from './pages/TaskPage';
+import CurrentTaskPage from './pages/CurrentTaskPage';
 import SettingsPage from './pages/SettingsPage';
 import Navbar from './components/Navbar';
+import Footer from './components/Footer';
 import { fetchSettings } from './services/api';
-import { Settings } from './types';
 import './styles/App.css';
+import { VoiceInputProvider } from './context/VoiceInputContext';
+import LoadingSpinner from './components/LoadingSpinner';
 
-// Контекст для настроек голосового ввода
-export const VoiceSettingsContext = createContext<{
-  voiceEnabled: boolean;
-  voiceLanguage: string;
+// Типы для настроек
+export interface Settings {
+  theme: 'light' | 'dark';
+  notification_time: number;
+  notification_enabled: boolean;
+  enable_notifications: boolean;
+}
+
+// Контекст для настроек приложения
+export const SettingsContext = createContext<{
+  settings: Settings | null;
+  isLoading: boolean;
+  error: string | null;
+  updateSettings: (newSettings: Partial<Settings>) => void;
 }>({
-  voiceEnabled: true,
-  voiceLanguage: 'uk-UA'
+  settings: null,
+  isLoading: false,
+  error: null,
+  updateSettings: () => {},
 });
 
 const App: React.FC = () => {
-  const [voiceSettings, setVoiceSettings] = useState({
-    voiceEnabled: true,
-    voiceLanguage: 'uk-UA'
-  });
+  const [settings, setSettings] = useState<Settings | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
+  // Загрузка настроек при инициализации
   useEffect(() => {
-    // Загружаем настройки при первом рендере
     const loadSettings = async () => {
       try {
-        const settings = await fetchSettings();
-        setVoiceSettings({
-          voiceEnabled: settings.enable_voice_input !== undefined ? settings.enable_voice_input : true,
-          voiceLanguage: settings.voice_language || 'uk-UA'
-        });
-      } catch (error) {
-        console.error('Failed to load settings:', error);
+        const response = await fetchSettings();
+        if (response.success) {
+          setSettings(response.data);
+        } else {
+          setError(response.message || 'Не удалось загрузить настройки');
+        }
+      } catch (err) {
+        setError('Ошибка при загрузке настроек');
+        console.error(err);
+      } finally {
+        setIsLoading(false);
       }
     };
 
     loadSettings();
   }, []);
 
+  // Функция для обновления настроек
+  const updateSettings = (newSettings: Partial<Settings>) => {
+    setSettings(prev => {
+      if (!prev) return prev;
+      return { ...prev, ...newSettings };
+    });
+  };
+
+  // Мемоизированное значение контекста
+  const settingsContextValue = useMemo(() => ({
+    settings,
+    isLoading,
+    error,
+    updateSettings,
+  }), [settings, isLoading, error]);
+
+  // Пока загружаются настройки, показываем спиннер
+  if (isLoading) {
+    return <LoadingSpinner />;
+  }
+
   return (
-    <VoiceSettingsContext.Provider value={voiceSettings}>
-      <Router>
-        <div className="app">
-          <Navbar />
-          
-          <main className="main-content">
-            <Routes>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/settings" element={<SettingsPage />} />
-            </Routes>
-          </main>
-          
-          <footer className="footer">
-            <div className="footer-content">
-              <p>&copy; {new Date().getFullYear()} Календар задач. Всі права захищені.</p>
-            </div>
-          </footer>
-          
-          {/* Мобильная навигация */}
-          <nav className="mobile-nav">
-            <Link to="/" className="mobile-nav-item">
-              <span className="mobile-nav-icon">📋</span>
-              <span className="mobile-nav-text">Задачі</span>
-            </Link>
-            <Link to="/settings" className="mobile-nav-item">
-              <span className="mobile-nav-icon">⚙️</span>
-              <span className="mobile-nav-text">Налаштування</span>
-            </Link>
-          </nav>
-        </div>
-      </Router>
-    </VoiceSettingsContext.Provider>
+    <SettingsContext.Provider value={settingsContextValue}>
+      <VoiceInputProvider>
+        <Router>
+          <div className="app-container">
+            <Navbar />
+            <main className="content-container">
+              <Routes>
+                <Route path="/" element={<HomePage />} />
+                <Route path="/tasks" element={<TaskPage />} />
+                <Route path="/current" element={<CurrentTaskPage />} />
+                <Route path="/settings" element={<SettingsPage />} />
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Routes>
+            </main>
+            <Footer />
+          </div>
+        </Router>
+      </VoiceInputProvider>
+    </SettingsContext.Provider>
   );
 };
 
