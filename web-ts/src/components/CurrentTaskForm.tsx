@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { createCurrentTask } from '../services/api';
+import VoiceInput from './VoiceInput';
 import '../styles/CurrentTaskForm.css';
 
 interface CurrentTaskFormProps {
@@ -37,6 +38,10 @@ const CurrentTaskForm: React.FC<CurrentTaskFormProps> = ({ onTaskAdded }) => {
     }
   };
 
+  const handleVoiceInput = (text: string) => {
+    setNote(text);
+  };
+
   const handleSendToTelegram = async () => {
     setIsLoading(true);
     setError(null);
@@ -69,35 +74,42 @@ const CurrentTaskForm: React.FC<CurrentTaskFormProps> = ({ onTaskAdded }) => {
       <form onSubmit={handleSubmit} className="current-task-form">
         <div className="form-group">
           <label htmlFor="note" className="form-label">Текст нотатки</label>
-          <input
-            type="text"
-            id="note"
-            className="form-control"
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-            placeholder="Введіть текст нотатки"
-            required
-          />
+          <div className="input-voice-container">
+            <input
+              type="text"
+              id="note"
+              className="form-control"
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              placeholder="Введіть текст нотатки"
+              required
+            />
+            <VoiceInput 
+              onTextReceived={handleVoiceInput} 
+              buttonLabel="🎤"
+            />
+          </div>
         </div>
         
-        <button 
-          type="submit" 
-          className="btn btn-primary" 
-          disabled={isLoading}
-        >
-          {isLoading ? 'Додавання...' : 'Додати нотатку'}
-        </button>
+        <div className="form-actions">
+          <button 
+            type="submit" 
+            className="btn btn-primary" 
+            disabled={isLoading}
+          >
+            {isLoading ? 'Додавання...' : 'Додати нотатку'}
+          </button>
+          
+          <button 
+            type="button"
+            onClick={handleSendToTelegram}
+            className="btn btn-success" 
+            disabled={isLoading}
+          >
+            {isLoading ? 'Надсилання...' : 'Надіслати в Telegram'}
+          </button>
+        </div>
       </form>
-      
-      <div className="telegram-actions">
-        <button 
-          onClick={handleSendToTelegram} 
-          className="btn btn-success" 
-          disabled={isLoading}
-        >
-          {isLoading ? 'Надсилання...' : 'Надіслати в Telegram'}
-        </button>
-      </div>
     </div>
   );
 };

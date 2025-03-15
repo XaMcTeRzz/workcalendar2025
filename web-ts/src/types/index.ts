@@ -25,6 +25,8 @@ export interface Settings {
   telegram_chat_id: string;
   enable_notifications: boolean;
   notification_time: number;
+  enable_voice_input: boolean;
+  voice_language: string;
 }
 
 // Тип для відповіді API

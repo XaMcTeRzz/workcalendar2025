@@ -8,7 +8,9 @@ const SettingsPage: React.FC = () => {
     telegram_bot_token: '',
     telegram_chat_id: '',
     enable_notifications: false,
-    notification_time: 9
+    notification_time: 9,
+    enable_voice_input: true,
+    voice_language: 'uk-UA'
   });
   
   const [loading, setLoading] = useState<boolean>(true);
@@ -20,7 +22,13 @@ const SettingsPage: React.FC = () => {
       try {
         setLoading(true);
         const data = await fetchSettings();
-        setSettings(data);
+        // Добавляем настройки голосового ввода, если их нет в полученных данных
+        const updatedData = {
+          ...data,
+          enable_voice_input: data.enable_voice_input !== undefined ? data.enable_voice_input : true,
+          voice_language: data.voice_language || 'uk-UA'
+        };
+        setSettings(updatedData);
         setError(null);
       } catch (err) {
         setError('Помилка завантаження налаштувань. Спробуйте пізніше.');
@@ -33,8 +41,9 @@ const SettingsPage: React.FC = () => {
     loadSettings();
   }, []);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type, checked } = e.target;
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value, type } = e.target;
+    const checked = type === 'checkbox' ? (e.target as HTMLInputElement).checked : undefined;
     
     setSettings(prev => ({
       ...prev,
@@ -64,10 +73,15 @@ const SettingsPage: React.FC = () => {
     }
   };
 
+  // Тест поддержки SpeechRecognition
+  const isSpeechRecognitionSupported = Boolean(
+    window.SpeechRecognition || (window as any).webkitSpeechRecognition
+  );
+
   return (
     <div className="settings-page">
       <h1 className="settings-title">
-        <span className="settings-title-icon">⚙️</span>
+        <span className="settings-icon">⚙️</span>
         Налаштування
       </h1>
       
@@ -77,20 +91,70 @@ const SettingsPage: React.FC = () => {
       {loading ? (
         <div className="loading">Завантаження налаштувань...</div>
       ) : (
-        <form onSubmit={handleSubmit}>
-          <div className="card">
-            <div className="card-header">
-              <span className="card-header-icon">🤖</span>
+        <form onSubmit={handleSubmit} className="settings-form">
+          {/* Настройки голосового ввода */}
+          <div className="settings-card">
+            <div className="settings-card-header">
+              <span className="settings-card-icon">🎤</span>
+              Голосове введення
+            </div>
+            <div className="settings-card-body">
+              {isSpeechRecognitionSupported ? (
+                <>
+                  <div className="form-check">
+                    <input
+                      type="checkbox"
+                      id="enable_voice_input"
+                      name="enable_voice_input"
+                      checked={settings.enable_voice_input}
+                      onChange={handleInputChange}
+                    />
+                    <label htmlFor="enable_voice_input">
+                      Увімкнути голосове введення
+                      <span className="form-text">Дозволяє використовувати мікрофон для введення тексту</span>
+                    </label>
+                  </div>
+                  
+                  <div className="form-group">
+                    <label htmlFor="voice_language">Мова розпізнавання</label>
+                    <select
+                      id="voice_language"
+                      name="voice_language"
+                      value={settings.voice_language}
+                      onChange={handleInputChange}
+                      disabled={!settings.enable_voice_input}
+                    >
+                      <option value="uk-UA">Українська</option>
+                      <option value="ru-RU">Російська</option>
+                      <option value="en-US">Англійська (США)</option>
+                      <option value="en-GB">Англійська (Великобританія)</option>
+                      <option value="de-DE">Німецька</option>
+                      <option value="fr-FR">Французька</option>
+                      <option value="pl-PL">Польська</option>
+                    </select>
+                  </div>
+                </>
+              ) : (
+                <div className="browser-warning">
+                  Ваш браузер не підтримує голосове введення. Спробуйте використовувати Chrome, Edge або Safari.
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Настройки Telegram */}
+          <div className="settings-card">
+            <div className="settings-card-header">
+              <span className="settings-card-icon">🤖</span>
               Налаштування Telegram
             </div>
-            <div className="card-body">
+            <div className="settings-card-body">
               <div className="form-group">
-                <label htmlFor="telegram_bot_token" className="form-label">Токен бота</label>
+                <label htmlFor="telegram_bot_token">Токен бота</label>
                 <input
                   type="text"
                   id="telegram_bot_token"
                   name="telegram_bot_token"
-                  className="form-control"
                   value={settings.telegram_bot_token}
                   onChange={handleInputChange}
                   placeholder="Введіть токен бота"
@@ -101,12 +165,11 @@ const SettingsPage: React.FC = () => {
               </div>
               
               <div className="form-group">
-                <label htmlFor="telegram_chat_id" className="form-label">ID чату</label>
+                <label htmlFor="telegram_chat_id">ID чату</label>
                 <input
                   type="text"
                   id="telegram_chat_id"
                   name="telegram_chat_id"
-                  className="form-control"
                   value={settings.telegram_chat_id}
                   onChange={handleInputChange}
                   placeholder="Введіть ID чату"
@@ -118,34 +181,33 @@ const SettingsPage: React.FC = () => {
             </div>
           </div>
           
-          <div className="card">
-            <div className="card-header">
-              <span className="card-header-icon">🔔</span>
+          {/* Настройки уведомлений */}
+          <div className="settings-card">
+            <div className="settings-card-header">
+              <span className="settings-card-icon">🔔</span>
               Налаштування сповіщень
             </div>
-            <div className="card-body">
+            <div className="settings-card-body">
               <div className="form-check">
                 <input
                   type="checkbox"
                   id="enable_notifications"
                   name="enable_notifications"
-                  className="form-check-input"
                   checked={settings.enable_notifications}
                   onChange={handleInputChange}
                 />
-                <label htmlFor="enable_notifications" className="form-check-label">
+                <label htmlFor="enable_notifications">
                   Увімкнути сповіщення
                   <span className="form-text">Отримувати сповіщення про заплановані задачі</span>
                 </label>
               </div>
               
               <div className="form-group">
-                <label htmlFor="notification_time" className="form-label">Час сповіщень</label>
+                <label htmlFor="notification_time">Час сповіщень</label>
                 <input
                   type="number"
                   id="notification_time"
                   name="notification_time"
-                  className="form-control"
                   value={settings.notification_time}
                   onChange={handleInputChange}
                   min="0"
@@ -159,8 +221,8 @@ const SettingsPage: React.FC = () => {
             </div>
           </div>
           
-          <button type="submit" className="btn-save" disabled={loading}>
-            <span className="btn-icon">💾</span>
+          <button type="submit" className="save-button" disabled={loading}>
+            <span className="save-icon">💾</span>
             Зберегти налаштування
           </button>
         </form>

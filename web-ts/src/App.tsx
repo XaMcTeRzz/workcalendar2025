@@ -1,64 +1,78 @@
-import React, { Suspense } from 'react';
+import React, { useState, useEffect, createContext } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import HomePage from './pages/HomePage';
+import SettingsPage from './pages/SettingsPage';
 import Navbar from './components/Navbar';
+import { fetchSettings } from './services/api';
+import { Settings } from './types';
 import './styles/App.css';
 
-// Используем ленивую загрузку для уменьшения размера бандла
-const HomePage = React.lazy(() => import('./pages/HomePage'));
-const SettingsPage = React.lazy(() => import('./pages/SettingsPage'));
-const TestPage = React.lazy(() => import('./pages/TestPage'));
-
-// Компонент загрузки
-const Loading = () => <div className="loading">Завантаження...</div>;
-
-// Предотвращаем ошибки для Vercel
-const SimpleTestPage = () => (
-  <div style={{ padding: '20px', textAlign: 'center' }}>
-    <h1>Тестовая страница</h1>
-    <p>Если вы видите эту страницу, значит приложение успешно развернуто на Vercel.</p>
-  </div>
-);
+// Контекст для настроек голосового ввода
+export const VoiceSettingsContext = createContext<{
+  voiceEnabled: boolean;
+  voiceLanguage: string;
+}>({
+  voiceEnabled: true,
+  voiceLanguage: 'uk-UA'
+});
 
 const App: React.FC = () => {
-  // Обработка ошибок для предотвращения черного экрана
-  try {
-    return (
+  const [voiceSettings, setVoiceSettings] = useState({
+    voiceEnabled: true,
+    voiceLanguage: 'uk-UA'
+  });
+
+  useEffect(() => {
+    // Загружаем настройки при первом рендере
+    const loadSettings = async () => {
+      try {
+        const settings = await fetchSettings();
+        setVoiceSettings({
+          voiceEnabled: settings.enable_voice_input !== undefined ? settings.enable_voice_input : true,
+          voiceLanguage: settings.voice_language || 'uk-UA'
+        });
+      } catch (error) {
+        console.error('Failed to load settings:', error);
+      }
+    };
+
+    loadSettings();
+  }, []);
+
+  return (
+    <VoiceSettingsContext.Provider value={voiceSettings}>
       <Router>
         <div className="app">
           <Navbar />
+          
           <main className="main-content">
-            <Suspense fallback={<Loading />}>
-              <Routes>
-                <Route path="/" element={<HomePage />} />
-                <Route path="/settings" element={<SettingsPage />} />
-                <Route path="/test" element={<SimpleTestPage />} />
-                <Route path="*" element={<SimpleTestPage />} />
-              </Routes>
-            </Suspense>
+            <Routes>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/settings" element={<SettingsPage />} />
+            </Routes>
           </main>
-          <footer className="app-footer">
-            <p>Календар задач &copy; 2023</p>
+          
+          <footer className="footer">
+            <div className="footer-content">
+              <p>&copy; {new Date().getFullYear()} Календар задач. Всі права захищені.</p>
+            </div>
           </footer>
           
-          {/* Мобільна навігація */}
-          <div className="mobile-nav">
-            <Link to="/" className="mobile-nav-link">Задачі</Link>
-            <Link to="/settings" className="mobile-nav-link">Налаштування</Link>
-            <Link to="/test" className="mobile-nav-link">Тест</Link>
-          </div>
+          {/* Мобильная навигация */}
+          <nav className="mobile-nav">
+            <Link to="/" className="mobile-nav-item">
+              <span className="mobile-nav-icon">📋</span>
+              <span className="mobile-nav-text">Задачі</span>
+            </Link>
+            <Link to="/settings" className="mobile-nav-item">
+              <span className="mobile-nav-icon">⚙️</span>
+              <span className="mobile-nav-text">Налаштування</span>
+            </Link>
+          </nav>
         </div>
       </Router>
-    );
-  } catch (error) {
-    // Резервный интерфейс при ошибке
-    return (
-      <div style={{ padding: '20px', textAlign: 'center' }}>
-        <h1>Произошла ошибка при загрузке приложения</h1>
-        <p>Пожалуйста, попробуйте обновить страницу.</p>
-        <button onClick={() => window.location.reload()}>Обновить</button>
-      </div>
-    );
-  }
+    </VoiceSettingsContext.Provider>
+  );
 };
 
 export default App; 

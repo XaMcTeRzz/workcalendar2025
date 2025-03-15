@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Task, TaskFormProps } from '../types';
 import { createTask, updateTask } from '../services/api';
+import VoiceInput from './VoiceInput';
 import '../styles/TaskForm.css';
 
 const TaskForm: React.FC<TaskFormProps> = ({ task, onClose, onSubmit }) => {
@@ -44,6 +45,13 @@ const TaskForm: React.FC<TaskFormProps> = ({ task, onClose, onSubmit }) => {
       [name]: checked
     }));
   };
+  
+  const handleVoiceInput = (text: string, field: keyof Omit<Task, 'id'>) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: text
+    }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -83,56 +91,57 @@ const TaskForm: React.FC<TaskFormProps> = ({ task, onClose, onSubmit }) => {
   return (
     <div className="task-form-container">
       <div className="task-form-header">
-        <h2 className="task-form-title">
-          {task ? 'Редагувати задачу' : 'Додати нову задачу'}
-        </h2>
-        <button 
-          className="task-form-close" 
-          onClick={onClose}
-          aria-label="Закрити форму"
-        >
-          &times;
-        </button>
+        <h2>{task ? 'Редагувати задачу' : 'Створити нову задачу'}</h2>
+        <button type="button" className="close-button" onClick={onClose}>×</button>
       </div>
       
-      {error && <div className="task-form-error">{error}</div>}
+      {error && <div className="error-message">{error}</div>}
       
       <form onSubmit={handleSubmit} className="task-form">
         <div className="form-group">
-          <label htmlFor="title" className="form-label">Назва задачі *</label>
-          <input
-            type="text"
-            id="title"
-            name="title"
-            className="form-control"
-            value={formData.title}
-            onChange={handleInputChange}
-            placeholder="Введіть назву задачі"
-            required
-          />
+          <label htmlFor="title">Назва задачі</label>
+          <div className="input-voice-container">
+            <input
+              type="text"
+              id="title"
+              name="title"
+              value={formData.title}
+              onChange={handleInputChange}
+              placeholder="Введіть назву задачі..."
+              required
+            />
+            <VoiceInput 
+              onTextReceived={(text) => handleVoiceInput(text, 'title')} 
+              buttonLabel="🎤"
+            />
+          </div>
         </div>
         
         <div className="form-group">
-          <label htmlFor="description" className="form-label">Опис</label>
-          <textarea
-            id="description"
-            name="description"
-            className="form-control"
-            value={formData.description}
-            onChange={handleInputChange}
-            placeholder="Введіть опис задачі"
-            rows={3}
-          />
+          <label htmlFor="description">Опис (необов'язково)</label>
+          <div className="input-voice-container">
+            <textarea
+              id="description"
+              name="description"
+              value={formData.description}
+              onChange={handleInputChange}
+              placeholder="Введіть опис задачі..."
+              rows={3}
+            />
+            <VoiceInput 
+              onTextReceived={(text) => handleVoiceInput(text, 'description')} 
+              buttonLabel="🎤"
+            />
+          </div>
         </div>
         
         <div className="form-row">
           <div className="form-group">
-            <label htmlFor="date" className="form-label">Дата *</label>
+            <label htmlFor="date">Дата</label>
             <input
               type="date"
               id="date"
               name="date"
-              className="form-control"
               value={formData.date}
               onChange={handleInputChange}
               required
@@ -140,63 +149,51 @@ const TaskForm: React.FC<TaskFormProps> = ({ task, onClose, onSubmit }) => {
           </div>
           
           <div className="form-group">
-            <label htmlFor="time" className="form-label">Час</label>
+            <label htmlFor="time">Час (необов'язково)</label>
             <input
               type="time"
               id="time"
               name="time"
-              className="form-control"
-              value={formData.time}
+              value={formData.time || ''}
               onChange={handleInputChange}
             />
           </div>
         </div>
         
         <div className="form-group">
-          <label htmlFor="priority" className="form-label">Пріоритет</label>
+          <label htmlFor="priority">Пріоритет</label>
           <select
             id="priority"
             name="priority"
-            className="form-control"
             value={formData.priority || ''}
             onChange={handleInputChange}
           >
-            <option value="">Без пріоритету</option>
+            <option value="">Оберіть пріоритет</option>
             <option value="HIGH">Високий</option>
             <option value="MEDIUM">Середній</option>
             <option value="LOW">Низький</option>
           </select>
         </div>
         
-        <div className="form-check">
-          <input
-            type="checkbox"
-            id="completed"
-            name="completed"
-            className="form-check-input"
-            checked={formData.completed}
-            onChange={handleCheckboxChange}
-          />
-          <label htmlFor="completed" className="form-check-label">
-            Виконано
-          </label>
-        </div>
+        {task && (
+          <div className="form-check">
+            <input
+              type="checkbox"
+              id="completed"
+              name="completed"
+              checked={formData.completed}
+              onChange={handleCheckboxChange}
+            />
+            <label htmlFor="completed">Виконано</label>
+          </div>
+        )}
         
         <div className="form-actions">
-          <button 
-            type="button" 
-            className="btn-cancel" 
-            onClick={onClose}
-            disabled={loading}
-          >
+          <button type="button" onClick={onClose} className="btn btn-secondary" disabled={loading}>
             Скасувати
           </button>
-          <button 
-            type="submit" 
-            className="btn-submit" 
-            disabled={loading}
-          >
-            {loading ? 'Збереження...' : task ? 'Зберегти зміни' : 'Додати задачу'}
+          <button type="submit" className="btn btn-primary" disabled={loading}>
+            {loading ? 'Збереження...' : (task ? 'Зберегти зміни' : 'Створити задачу')}
           </button>
         </div>
       </form>
