@@ -1,18 +1,24 @@
 import React, { useState } from 'react';
 import { useUser } from '../contexts/UserContext';
 import { useVoiceInput } from '../contexts/VoiceInputContext';
+import { useNotification } from '../components/NotificationService';
 import Button from '../components/Button';
-import { FaSave } from 'react-icons/fa';
+import { FaSave, FaCog, FaMicrophone, FaPalette, FaFont, FaBell } from 'react-icons/fa';
 
 const Settings: React.FC = () => {
   const { user, updateUserSettings } = useUser();
   const { isVoiceEnabled, toggleVoiceEnabled, language, setLanguage } = useVoiceInput();
+  const { showNotification } = useNotification();
   
   const [formState, setFormState] = useState({
     theme: user?.settings.theme || 'dark',
+    colorScheme: 'default', // default, blue, green, purple
+    useRoundedCorners: true,
+    fontScale: 'normal', // small, normal, large
     notifications: user?.settings.notifications || false,
     language: language || 'uk-UA',
-    voiceEnabled: isVoiceEnabled
+    voiceEnabled: isVoiceEnabled,
+    useAnimations: true
   });
   
   const [isSaving, setIsSaving] = useState(false);
@@ -61,7 +67,9 @@ const Settings: React.FC = () => {
       }
       
       setSaveSuccess(true);
+      showNotification('Налаштування успішно збережені', 'success');
     } catch (error) {
+      showNotification('Помилка при збереженні налаштувань', 'error');
       console.error('Error saving settings:', error);
     } finally {
       setIsSaving(false);
@@ -77,7 +85,10 @@ const Settings: React.FC = () => {
       <div className="settings-container">
         <form onSubmit={handleSubmit} className="settings-form">
           <div className="card">
-            <h2 className="card-title">Інтерфейс</h2>
+            <h2 className="card-title">
+              <FaPalette style={{ marginRight: '8px' }} />
+              Зовнішній вигляд
+            </h2>
             <div className="card-content">
               <div className="form-group">
                 <label htmlFor="theme">Тема:</label>
@@ -94,6 +105,58 @@ const Settings: React.FC = () => {
               </div>
               
               <div className="form-group">
+                <label htmlFor="colorScheme">Кольорова схема:</label>
+                <select 
+                  id="colorScheme" 
+                  name="colorScheme" 
+                  value={formState.colorScheme} 
+                  onChange={handleChange}
+                  className="form-control"
+                >
+                  <option value="default">Стандартна (пурпурова)</option>
+                  <option value="blue">Блакитна</option>
+                  <option value="green">Зелена</option>
+                  <option value="purple">Фіолетова</option>
+                </select>
+              </div>
+              
+              <div className="form-group switch-group">
+                <label htmlFor="useRoundedCorners">Округлені кути елементів:</label>
+                <label className="switch">
+                  <input 
+                    type="checkbox" 
+                    id="useRoundedCorners" 
+                    name="useRoundedCorners" 
+                    checked={formState.useRoundedCorners} 
+                    onChange={handleChange}
+                  />
+                  <span className="slider"></span>
+                </label>
+              </div>
+              
+              <div className="form-group switch-group">
+                <label htmlFor="useAnimations">Анімації інтерфейсу:</label>
+                <label className="switch">
+                  <input 
+                    type="checkbox" 
+                    id="useAnimations" 
+                    name="useAnimations" 
+                    checked={formState.useAnimations} 
+                    onChange={handleChange}
+                  />
+                  <span className="slider"></span>
+                </label>
+              </div>
+            </div>
+          </div>
+          
+          <div className="card">
+            <h2 className="card-title">
+              <FaFont style={{ marginRight: '8px' }} />
+              Текст і мова
+            </h2>
+            <div className="card-content">
+              <div className="form-group">
                 <label htmlFor="language">Мова інтерфейсу:</label>
                 <select 
                   id="language" 
@@ -107,11 +170,29 @@ const Settings: React.FC = () => {
                   <option value="en-US">Англійська</option>
                 </select>
               </div>
+              
+              <div className="form-group">
+                <label htmlFor="fontScale">Розмір шрифту:</label>
+                <select 
+                  id="fontScale" 
+                  name="fontScale" 
+                  value={formState.fontScale} 
+                  onChange={handleChange}
+                  className="form-control"
+                >
+                  <option value="small">Маленький</option>
+                  <option value="normal">Звичайний</option>
+                  <option value="large">Великий</option>
+                </select>
+              </div>
             </div>
           </div>
           
           <div className="card">
-            <h2 className="card-title">Сповіщення</h2>
+            <h2 className="card-title">
+              <FaBell style={{ marginRight: '8px' }} />
+              Сповіщення
+            </h2>
             <div className="card-content">
               <div className="form-group switch-group">
                 <label htmlFor="notifications">Включити сповіщення:</label>
@@ -130,7 +211,10 @@ const Settings: React.FC = () => {
           </div>
           
           <div className="card">
-            <h2 className="card-title">Голосовий ввід</h2>
+            <h2 className="card-title">
+              <FaMicrophone style={{ marginRight: '8px' }} />
+              Голосовий ввід
+            </h2>
             <div className="card-content">
               <div className="form-group switch-group">
                 <label htmlFor="voiceEnabled">Включити голосовий ввід:</label>

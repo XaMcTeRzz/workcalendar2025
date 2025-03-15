@@ -185,11 +185,14 @@ button {
   letter-spacing: 0.5px;
   position: relative;
   overflow: hidden;
+  transform: translateZ(0);
+  transition: background-color 0.3s, color 0.3s, box-shadow 0.3s, transform 0.2s;
   box-shadow: var(--shadow-sm);
 }
 
 .btn:active {
-  transform: translateY(1px);
+  transform: translateY(2px) scale(0.98);
+  transition: transform 0.1s;
 }
 
 .btn-primary {
@@ -260,11 +263,18 @@ button {
   align-items: center;
   justify-content: center;
   font-size: 24px;
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+              background-color 0.3s,
+              box-shadow 0.3s;
 }
 
 .btn-fab:hover {
-  box-shadow: var(--shadow-elevated);
-  background-color: var(--secondary-light);
+  transform: translateY(-5px) scale(1.05);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+}
+
+.btn-fab:active {
+  transform: translateY(0) scale(0.95);
 }
 
 .btn-sm {
@@ -332,7 +342,7 @@ label {
   left: 4px;
   bottom: 4px;
   background-color: white;
-  transition: .4s;
+  transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   border-radius: 50%;
 }
 
@@ -341,7 +351,7 @@ input:checked + .slider {
 }
 
 input:checked + .slider:before {
-  transform: translateX(16px);
+  transform: translateX(16px) scale(1.1);
 }
 
 /* Карточки */
@@ -351,13 +361,16 @@ input:checked + .slider:before {
   padding: var(--spacing-lg);
   box-shadow: var(--shadow-sm);
   margin-bottom: var(--spacing-lg);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+              box-shadow 0.3s,
+              border-color 0.3s;
   overflow: hidden;
+  will-change: transform, box-shadow;
 }
 
 .card:hover {
-  transform: translateY(-3px);
-  box-shadow: var(--shadow);
+  transform: translateY(-4px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
 }
 
 .card-title {
@@ -426,11 +439,16 @@ input:checked + .slider:before {
   border: 3px solid rgba(187, 134, 252, 0.3);
   border-radius: 50%;
   border-top-color: var(--primary-color);
-  animation: spin 1s linear infinite;
+  animation: spinner-rotate 1.4s linear infinite;
 }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
+@keyframes spinner-rotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* Медиа-запросы для адаптивного дизайна */
@@ -647,7 +665,7 @@ input:checked + .slider:before {
   border: 3px solid var(--primary-light);
   border-radius: 50%;
   border-top-color: var(--primary-color);
-  animation: spin 1s linear infinite;
+  animation: spinner-rotate 1.4s linear infinite;
   margin-left: var(--spacing-sm);
 }
 
@@ -727,6 +745,7 @@ input:checked + .slider:before {
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), color 0.3s;
 }
 
 .mobile-nav-text {
@@ -747,7 +766,7 @@ input:checked + .slider:before {
   z-index: 2000;
   box-shadow: var(--shadow-lg);
   transform: translateX(-100%);
-  transition: transform 0.3s var(--transition-function);
+  transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
   display: flex;
   flex-direction: column;
 }
@@ -814,7 +833,8 @@ input:checked + .slider:before {
   z-index: 1999;
   opacity: 0;
   visibility: hidden;
-  transition: opacity 0.3s, visibility 0.3s;
+  transition: opacity 0.3s cubic-bezier(0.4, 0.0, 0.2, 1),
+              visibility 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
 }
 
 .drawer-backdrop.open {
@@ -960,7 +980,7 @@ input:checked + .slider:before {
   justify-content: center;
   cursor: pointer;
   border-radius: 50%;
-  transition: background-color 0.2s;
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), color 0.3s;
 }
 
 .toolbar-nav-icon:hover {
@@ -1117,11 +1137,13 @@ input:checked + .slider:before {
   cursor: pointer;
   position: relative;
   overflow: hidden;
-  transition: background-color 0.2s ease;
+  transition: transform 0.2s, background-color 0.2s, box-shadow 0.2s;
 }
 
 .calendar-day:hover {
-  background-color: #404040;
+  transform: translateZ(0) scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  z-index: 1;
 }
 
 .calendar-day.empty {
@@ -1390,6 +1412,7 @@ input:checked + .slider:before {
   background-color: #2d2d2d;
   border-radius: 8px;
   margin-top: 24px;
+  animation: fadeInUp 0.5s forwards;
 }
 
 .empty-state p {
@@ -1414,12 +1437,12 @@ input:checked + .slider:before {
   background-color: var(--surface-2);
   border: 1px solid var(--surface-3);
   color: var(--on-surface);
-  transition: border-color 0.2s;
+  transition: border-color 0.3s, box-shadow 0.3s, background-color 0.2s;
 }
 
 .form-control:focus {
-  border-color: var(--primary-color);
-  outline: none;
+  transform: translateZ(0);
+  box-shadow: 0 0 0 2px rgba(187, 134, 252, 0.3);
 }
 
 .switch-group {
@@ -1678,5 +1701,471 @@ input:checked + .slider:before {
   .action-buttons button {
     flex: 1;
     justify-content: center;
+  }
+}
+
+/* Добавление анимации при переходе между страницами */
+.page-container {
+  animation: pageTransition 0.3s ease;
+}
+
+@keyframes pageTransition {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Улучшенные эффекты при нажатии и hovera для кнопок */
+.btn:hover {
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+/* Ripple эффект для всех интерактивных элементов */
+.btn::after, 
+.card-clickable::after,
+.drawer-menu-item::after,
+.mobile-nav-item::after,
+.calendar-day::after,
+.voice-btn::after,
+.toolbar-nav-icon::after {
+  content: '';
+  display: block;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.3) 10%, transparent 10.01%);
+  background-repeat: no-repeat;
+  background-position: 50%;
+  transform: scale(10, 10);
+  opacity: 0;
+  transition: transform 0.6s, opacity 1s;
+}
+
+.btn:active::after, 
+.card-clickable:active::after,
+.drawer-menu-item:active::after,
+.mobile-nav-item:active::after,
+.calendar-day:active::after,
+.voice-btn:active::after,
+.toolbar-nav-icon:active::after {
+  transform: scale(0, 0);
+  opacity: 0.3;
+  transition: 0s;
+}
+
+/* Улучшенная кнопка FAB */
+.btn-fab:hover {
+  transform: translateY(-5px) scale(1.05);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+}
+
+.btn-fab:active {
+  transform: translateY(0) scale(0.95);
+}
+
+/* Анимация для карточек и элементов списка */
+.card:hover, .task-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+}
+
+/* Анимация для модальных окон */
+.modal {
+  transform-origin: bottom center;
+}
+
+/* Анимация для переключателей */
+.slider:before {
+  transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+input:checked + .slider:before {
+  transform: translateX(16px) scale(1.1);
+}
+
+/* Улучшенные анимации для иконок */
+.mobile-nav-icon, .drawer-menu-icon, .toolbar-nav-icon {
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), color 0.3s;
+}
+
+.mobile-nav-item:hover .mobile-nav-icon,
+.drawer-menu-item:hover .drawer-menu-icon,
+.toolbar-nav-icon:hover {
+  transform: scale(1.15);
+}
+
+/* Улучшенные анимации для формы задач */
+.form-control {
+  transition: border-color 0.3s, box-shadow 0.3s, background-color 0.2s;
+}
+
+.form-control:focus {
+  transform: translateZ(0);
+  box-shadow: 0 0 0 2px rgba(187, 134, 252, 0.3);
+}
+
+/* Анимация для календаря */
+.calendar-day {
+  transition: transform 0.2s, background-color 0.2s, box-shadow 0.2s;
+}
+
+.calendar-day:not(.empty):hover {
+  transform: translateZ(0) scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  z-index: 1;
+}
+
+/* Анимация для уведомлений */
+.notification-container {
+  pointer-events: none;
+}
+
+.notification-item {
+  pointer-events: auto;
+}
+
+.notification-item.slide-out {
+  animation: slideOutNotification 0.3s ease forwards;
+}
+
+@keyframes slideOutNotification {
+  to {
+    transform: translateX(120%);
+    opacity: 0;
+  }
+}
+
+/* Анимации для боковой панели */
+.drawer {
+  transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+.drawer-backdrop {
+  transition: opacity 0.3s cubic-bezier(0.4, 0.0, 0.2, 1),
+              visibility 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+/* Улучшенные стили для активных состояний */
+.drawer-menu-item.active {
+  position: relative;
+  overflow: hidden;
+}
+
+.drawer-menu-item.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 4px;
+  background-color: var(--primary-color);
+  border-radius: 0 2px 2px 0;
+}
+
+/* Пульсирующая анимация для важных элементов */
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(187, 134, 252, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(187, 134, 252, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(187, 134, 252, 0);
+  }
+}
+
+.priority-high {
+  animation: pulse 2s infinite;
+}
+
+/* Улучшенные эффекты фокуса для accessibility */
+*:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+/* Анимация загрузки с Material Design */
+.loading-spinner {
+  border-top-color: var(--primary-color);
+  animation: spinner-rotate 1.4s linear infinite;
+}
+
+@keyframes spinner-rotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Анимация для пустых состояний */
+.empty-state {
+  animation: fadeInUp 0.5s forwards;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Анимация для появления заголовков */
+h1, h2 {
+  position: relative;
+}
+
+h1::after, 
+.card-title::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -5px;
+  width: 0;
+  height: 2px;
+  background-color: var(--primary-color);
+  transition: width 0.8s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.page-container h1::after,
+.page-container .card-title::after {
+  width: 80px;
+}
+
+/* About Page Styles */
+.about-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.about-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 48px 24px;
+}
+
+.about-logo {
+  font-size: 72px;
+  color: var(--primary-color);
+  margin-bottom: 16px;
+}
+
+.about-version {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin: 8px 0 24px;
+}
+
+.about-tagline {
+  font-size: 18px;
+  max-width: 600px;
+  line-height: 1.6;
+}
+
+.tech-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 32px;
+  justify-content: space-between;
+}
+
+.tech-item {
+  flex: 1;
+  min-width: 200px;
+}
+
+.tech-item h3 {
+  color: var(--primary-color);
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 8px;
+}
+
+.tech-item ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.tech-item li {
+  margin-bottom: 8px;
+  position: relative;
+  padding-left: 20px;
+}
+
+.tech-item li:before {
+  content: "•";
+  color: var(--primary-color);
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 24px;
+}
+
+.feature-card {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.feature-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+}
+
+.feature-icon {
+  font-size: 32px;
+  color: var(--primary-color);
+  margin-bottom: 16px;
+}
+
+.feature-card h3 {
+  margin-bottom: 10px;
+  color: var(--text-primary);
+}
+
+.feature-card p {
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.spinners-showcase {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 32px;
+  justify-content: space-around;
+}
+
+.spinner-showcase-item {
+  flex: 1;
+  min-width: 200px;
+  max-width: 300px;
+  text-align: center;
+}
+
+.spinner-showcase-item h3 {
+  margin-bottom: 16px;
+  color: var(--primary-color);
+}
+
+.spinner-demo {
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+}
+
+.team-section {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 32px;
+}
+
+.team-member {
+  width: 200px;
+  text-align: center;
+}
+
+.team-avatar {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background-color: var(--primary-color);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  font-weight: bold;
+  margin: 0 auto 16px;
+}
+
+.team-member h3 {
+  margin-bottom: 4px;
+}
+
+.team-member p {
+  color: var(--text-secondary);
+  font-size: 14px;
+  margin-bottom: 12px;
+}
+
+.team-links {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+}
+
+.team-links a {
+  font-size: 24px;
+  color: var(--text-secondary);
+  transition: color 0.2s ease;
+}
+
+.team-links a:hover {
+  color: var(--primary-color);
+}
+
+/* Media Queries */
+@media (max-width: 768px) {
+  .about-logo {
+    font-size: 56px;
+  }
+  
+  .about-tagline {
+    font-size: 16px;
+  }
+  
+  .tech-list {
+    flex-direction: column;
+    gap: 24px;
+  }
+}
+
+@media (max-width: 480px) {
+  .about-hero {
+    padding: 32px 16px;
+  }
+  
+  .about-logo {
+    font-size: 48px;
+  }
+  
+  .features-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .spinners-showcase {
+    flex-direction: column;
+    align-items: center;
   }
 } 

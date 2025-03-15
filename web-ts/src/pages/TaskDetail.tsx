@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTask } from '../contexts/TaskContext';
 import { useVoiceInput } from '../contexts/VoiceInputContext';
+import { useNotification } from '../components/NotificationService';
 import Button from '../components/Button';
 import { FaSave, FaTrash, FaMicrophone, FaArrowLeft } from 'react-icons/fa';
 
@@ -10,6 +11,7 @@ const TaskDetail: React.FC = () => {
   const navigate = useNavigate();
   const { getTaskById, updateTask, deleteTask } = useTask();
   const { isVoiceEnabled, startListening, stopListening, isListening, transcript, resetTranscript } = useVoiceInput();
+  const { showNotification } = useNotification();
   
   const [task, setTask] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -22,11 +24,12 @@ const TaskDetail: React.FC = () => {
       if (taskData) {
         setTask(taskData);
       } else {
+        showNotification('Задача не знайдена', 'error');
         navigate('/tasks', { replace: true });
       }
       setIsLoading(false);
     }
-  }, [id, getTaskById, navigate]);
+  }, [id, getTaskById, navigate, showNotification]);
   
   useEffect(() => {
     if (isListening && transcript && activeField) {
@@ -37,8 +40,11 @@ const TaskDetail: React.FC = () => {
       resetTranscript();
       stopListening();
       setActiveField(null);
+      
+      // Показываем подсказку о голосовом вводе
+      showNotification(`Текст додано: "${transcript}"`, 'info', 2000);
     }
-  }, [isListening, transcript, activeField, resetTranscript, stopListening]);
+  }, [isListening, transcript, activeField, resetTranscript, stopListening, showNotification]);
   
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -52,6 +58,9 @@ const TaskDetail: React.FC = () => {
     if (isVoiceEnabled) {
       setActiveField(fieldName);
       startListening();
+      showNotification('Говоріть зараз...', 'info', 1500);
+    } else {
+      showNotification('Голосовий ввід вимкнено в налаштуваннях', 'info');
     }
   };
   
@@ -66,10 +75,13 @@ const TaskDetail: React.FC = () => {
         date: task.date,
         priority: task.priority,
         category: task.category,
+        completed: task.completed
       });
       
+      showNotification('Задача успішно оновлена', 'success');
       navigate('/tasks');
     } catch (error) {
+      showNotification('Помилка при оновленні задачі', 'error');
       console.error('Error updating task:', error);
     } finally {
       setIsSaving(false);
@@ -80,8 +92,10 @@ const TaskDetail: React.FC = () => {
     if (window.confirm('Ви впевнені, що хочете видалити цю задачу?')) {
       try {
         await deleteTask(id!);
+        showNotification('Задача успішно видалена', 'info');
         navigate('/tasks');
       } catch (error) {
+        showNotification('Помилка при видаленні задачі', 'error');
         console.error('Error deleting task:', error);
       }
     }
@@ -132,6 +146,7 @@ const TaskDetail: React.FC = () => {
                     onChange={handleInputChange}
                     required
                     className="form-control"
+                    placeholder="Введіть назву задачі"
                   />
                   {isVoiceEnabled && (
                     <button
@@ -155,6 +170,7 @@ const TaskDetail: React.FC = () => {
                     onChange={handleInputChange}
                     rows={5}
                     className="form-control"
+                    placeholder="Введіть опис задачі"
                   ></textarea>
                   {isVoiceEnabled && (
                     <button
@@ -198,14 +214,26 @@ const TaskDetail: React.FC = () => {
               
               <div className="form-group">
                 <label htmlFor="category">Категорія:</label>
-                <input
-                  type="text"
-                  id="category"
-                  name="category"
-                  value={task.category || ''}
-                  onChange={handleInputChange}
-                  className="form-control"
-                />
+                <div className="input-with-voice">
+                  <input
+                    type="text"
+                    id="category"
+                    name="category"
+                    value={task.category || ''}
+                    onChange={handleInputChange}
+                    className="form-control"
+                    placeholder="Введіть категорію (опціонально)"
+                  />
+                  {isVoiceEnabled && (
+                    <button
+                      type="button"
+                      className="voice-btn"
+                      onClick={() => handleVoiceInput('category')}
+                    >
+                      <FaMicrophone />
+                    </button>
+                  )}
+                </div>
               </div>
               
               <div className="form-group switch-group">
