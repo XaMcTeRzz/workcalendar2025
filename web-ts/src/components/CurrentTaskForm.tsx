@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CurrentTaskService } from '../services/api';
+import { createCurrentTask } from '../services/api';
 import '../styles/CurrentTaskForm.css';
 
 interface CurrentTaskFormProps {
@@ -23,7 +23,10 @@ const CurrentTaskForm: React.FC<CurrentTaskFormProps> = ({ onTaskAdded }) => {
     setError(null);
 
     try {
-      await CurrentTaskService.addCurrentTask(note);
+      await createCurrentTask({ 
+        title: note,
+        created_at: new Date().toISOString()
+      });
       setNote('');
       onTaskAdded();
     } catch (err) {
@@ -39,12 +42,16 @@ const CurrentTaskForm: React.FC<CurrentTaskFormProps> = ({ onTaskAdded }) => {
     setError(null);
 
     try {
-      const response = await CurrentTaskService.sendToTelegram();
+      // Пока отключим эту функциональность, так как она не реализована в API
+      alert('Функціональність тимчасово недоступна');
+      /*
+      const response = await sendToTelegram();
       if (response.success) {
         alert('Задачі успішно надіслано в Telegram!');
       } else {
         setError(response.message || 'Помилка при надсиланні в Telegram');
       }
+      */
     } catch (err) {
       setError('Помилка при надсиланні в Telegram. Спробуйте ще раз.');
       console.error(err);

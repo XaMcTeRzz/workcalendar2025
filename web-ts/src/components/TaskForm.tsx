@@ -63,7 +63,10 @@ const TaskForm: React.FC<TaskFormProps> = ({ task, onClose, onSubmit }) => {
       setError(null);
       
       if (task) {
-        await updateTask(task.id, formData);
+        await updateTask({
+          ...formData,
+          id: task.id
+        });
       } else {
         await createTask(formData);
       }

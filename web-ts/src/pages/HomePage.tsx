@@ -30,8 +30,8 @@ const HomePage: React.FC = () => {
       setCurrentTasks(currentTasksData);
       setError(null);
     } catch (err) {
-      setError('Помилка завантаження даних. Спробуйте оновити сторінку.');
-      console.error('Error loading data:', err);
+      setError('Помилка завантаження даних. Спробуйте пізніше.');
+      console.error('Error fetching data:', err);
     } finally {
       setLoading(false);
     }
@@ -74,7 +74,7 @@ const HomePage: React.FC = () => {
       if (!task) return;
       
       const updatedTask = { ...task, completed };
-      await updateTask(taskId, updatedTask);
+      await updateTask(updatedTask);
       
       setTasks(tasks.map(t => 
         t.id === taskId ? { ...t, completed } : t
