@@ -1,0 +1,43 @@
+{
+  "buildCommand": "cd web-ts && npm install && npm run build",
+  "outputDirectory": "web-ts/dist",
+  "devCommand": "cd web-ts && npm run dev",
+  "installCommand": "cd web-ts && npm install",
+  "framework": "vite",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        }
+      ]
+    }
+  ],
+  "build": {
+    "env": {
+      "VITE_APP_TITLE": "Work Calendar",
+      "NODE_VERSION": "18.x"
+    }
+  },
+  "github": {
+    "enabled": true,
+    "silent": false,
+    "autoAlias": true
+  }
+} 
