@@ -1,0 +1,11 @@
+.git
+.github
+.vscode
+node_modules
+**/node_modules
+**/dist
+**/.env
+**/.env.*
+**/coverage
+**/.husky
+README.md 
