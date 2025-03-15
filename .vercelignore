@@ -1,9 +1,9 @@
-.git
-.github
-.vscode
-node_modules
-coverage
-.env
-.env.*
-.husky
+.git/
+.github/
+.vscode/
+web-ts/node_modules/
+web-ts/coverage/
+web-ts/.env
+web-ts/.env.*
+.husky/
 README.md 

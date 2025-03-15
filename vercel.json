@@ -1,10 +1,7 @@
 {
   "version": 2,
-  "buildCommand": "cd web-ts && npm install && npm run build",
-  "outputDirectory": "web-ts/dist",
-  "devCommand": "cd web-ts && npm run dev",
-  "installCommand": "cd web-ts && npm install",
   "framework": "vite",
+  "root": "web-ts",
   "rewrites": [
     {
       "source": "/(.*)",
@@ -35,10 +32,5 @@
       "VITE_APP_TITLE": "Work Calendar",
       "NODE_VERSION": "18.x"
     }
-  },
-  "github": {
-    "enabled": true,
-    "silent": false,
-    "autoAlias": true
   }
 } 
