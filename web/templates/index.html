@@ -1,0 +1,264 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- Desktop View -->
+<div class="d-none d-md-block">
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0"><i class="bi bi-calendar3 me-2"></i>Задачі</h5>
+                    <button class="btn btn-sm btn-light" type="button" data-bs-toggle="collapse" data-bs-target="#addTaskForm">
+                        <i class="bi bi-plus-lg"></i> Додати
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="collapse mb-4" id="addTaskForm">
+                        <form action="{{ url_for('add_task') }}" method="post" class="p-3 bg-light rounded-3">
+                            <div class="mb-3">
+                                <label for="taskTitle" class="form-label">Назва задачі</label>
+                                <input type="text" name="title" id="taskTitle" class="form-control" placeholder="Введіть назву задачі" required>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="taskDate" class="form-label">Дата</label>
+                                    <input type="date" name="date" id="taskDate" class="form-control">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="taskTime" class="form-label">Час</label>
+                                    <input type="time" name="time" id="taskTime" class="form-control">
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save me-1"></i> Зберегти
+                            </button>
+                        </form>
+                    </div>
+                    
+                    <div class="task-list">
+                        {% if tasks %}
+                            {% for task in tasks %}
+                            <div class="task-item">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <h6 class="mb-1">{{ task[1] }}</h6>
+                                    <span class="badge bg-primary rounded-pill">ID: {{ task[0] }}</span>
+                                </div>
+                                {% if task[2] or task[3] %}
+                                <div class="d-flex align-items-center mt-2 text-muted small">
+                                    {% if task[2] %}
+                                    <i class="bi bi-calendar-date me-1"></i>
+                                    <span class="me-3">{{ task[2] }}</span>
+                                    {% endif %}
+                                    
+                                    {% if task[3] %}
+                                    <i class="bi bi-clock me-1"></i>
+                                    <span>{{ task[3] }}</span>
+                                    {% endif %}
+                                </div>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="text-center py-5 text-muted">
+                                <i class="bi bi-calendar-x" style="font-size: 3rem;"></i>
+                                <p class="mt-3">Немає запланованих задач</p>
+                                <button class="btn btn-sm btn-outline-primary" data-bs-toggle="collapse" data-bs-target="#addTaskForm">
+                                    Додати першу задачу
+                                </button>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0"><i class="bi bi-list-check me-2"></i>Поточні задачі</h5>
+                    <button class="btn btn-sm btn-light" type="button" data-bs-toggle="collapse" data-bs-target="#addCurrentForm">
+                        <i class="bi bi-plus-lg"></i> Додати
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="collapse mb-4" id="addCurrentForm">
+                        <form action="{{ url_for('add_current') }}" method="post" class="p-3 bg-light rounded-3">
+                            <div class="mb-3">
+                                <label for="noteText" class="form-label">Текст замітки</label>
+                                <input type="text" name="note" id="noteText" class="form-control" placeholder="Введіть текст замітки" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save me-1"></i> Зберегти
+                            </button>
+                        </form>
+                    </div>
+
+                    <div class="task-list current-tasks-container">
+                        {% if current_tasks %}
+                            {% for task in current_tasks %}
+                            <div class="task-item">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <p class="mb-0">{{ task[1] }}</p>
+                                    <span class="badge bg-secondary rounded-pill">ID: {{ task[0] }}</span>
+                                </div>
+                            </div>
+                            {% endfor %}
+                            
+                            <button onclick="sendToTelegram()" class="btn btn-success w-100 mt-3">
+                                <i class="bi bi-telegram me-1"></i> Надіслати в Telegram
+                            </button>
+                        {% else %}
+                            <div class="text-center py-5 text-muted">
+                                <i class="bi bi-list-ul" style="font-size: 3rem;"></i>
+                                <p class="mt-3">Немає поточних задач</p>
+                                <button class="btn btn-sm btn-outline-primary" data-bs-toggle="collapse" data-bs-target="#addCurrentForm">
+                                    Додати першу замітку
+                                </button>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Mobile View -->
+<div class="d-block d-md-none">
+    <!-- Task Form (initially hidden) -->
+    <div class="card mb-4 collapse" id="addTaskForm">
+        <div class="card-header">
+            <h5 class="card-title mb-0"><i class="bi bi-plus-circle me-2"></i>Нова задача</h5>
+        </div>
+        <div class="card-body">
+            <form action="{{ url_for('add_task') }}" method="post">
+                <div class="mb-3">
+                    <label for="mobileTaskTitle" class="form-label">Назва задачі</label>
+                    <input type="text" name="title" id="mobileTaskTitle" class="form-control" placeholder="Введіть назву задачі" required>
+                </div>
+                <div class="mb-3">
+                    <label for="mobileTaskDate" class="form-label">Дата</label>
+                    <input type="date" name="date" id="mobileTaskDate" class="form-control">
+                </div>
+                <div class="mb-3">
+                    <label for="mobileTaskTime" class="form-label">Час</label>
+                    <input type="time" name="time" id="mobileTaskTime" class="form-control">
+                </div>
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-save me-1"></i> Зберегти задачу
+                </button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Current Task Form (initially hidden) -->
+    <div class="card mb-4 collapse" id="addCurrentForm">
+        <div class="card-header">
+            <h5 class="card-title mb-0"><i class="bi bi-plus-circle me-2"></i>Нова поточна задача</h5>
+        </div>
+        <div class="card-body">
+            <form action="{{ url_for('add_current') }}" method="post">
+                <div class="mb-3">
+                    <label for="mobileNoteText" class="form-label">Текст замітки</label>
+                    <input type="text" name="note" id="mobileNoteText" class="form-control" placeholder="Введіть текст замітки" required>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-save me-1"></i> Зберегти замітку
+                </button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Tasks Tab -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="card-title mb-0"><i class="bi bi-calendar3 me-2"></i>Задачі</h5>
+        </div>
+        <div class="card-body p-2">
+            <div class="task-list">
+                {% if tasks %}
+                    {% for task in tasks %}
+                    <div class="task-item">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <h6 class="mb-1">{{ task[1] }}</h6>
+                        </div>
+                        {% if task[2] or task[3] %}
+                        <div class="d-flex align-items-center mt-2 text-muted small">
+                            {% if task[2] %}
+                            <i class="bi bi-calendar-date me-1"></i>
+                            <span class="me-3">{{ task[2] }}</span>
+                            {% endif %}
+                            
+                            {% if task[3] %}
+                            <i class="bi bi-clock me-1"></i>
+                            <span>{{ task[3] }}</span>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-4 text-muted">
+                        <i class="bi bi-calendar-x" style="font-size: 2.5rem;"></i>
+                        <p class="mt-2">Немає запланованих задач</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Current Tasks Tab -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="card-title mb-0"><i class="bi bi-list-check me-2"></i>Поточні задачі</h5>
+        </div>
+        <div class="card-body p-2">
+            <div class="task-list current-tasks-container">
+                {% if current_tasks %}
+                    {% for task in current_tasks %}
+                    <div class="task-item">
+                        <p class="mb-0">{{ task[1] }}</p>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-4 text-muted">
+                        <i class="bi bi-list-ul" style="font-size: 2.5rem;"></i>
+                        <p class="mt-2">Немає поточних задач</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Mobile-specific script
+    document.addEventListener('DOMContentLoaded', function() {
+        // Handle mobile add button
+        const addTaskBtn = document.getElementById('addTaskBtn');
+        if (addTaskBtn) {
+            addTaskBtn.addEventListener('click', function(e) {
+                const addTaskForm = document.getElementById('addTaskForm');
+                const addCurrentForm = document.getElementById('addCurrentForm');
+                
+                // Toggle forms
+                if (addTaskForm.classList.contains('show')) {
+                    addTaskForm.classList.remove('show');
+                    addCurrentForm.classList.add('show');
+                } else if (addCurrentForm.classList.contains('show')) {
+                    addCurrentForm.classList.remove('show');
+                } else {
+                    addTaskForm.classList.add('show');
+                }
+                
+                // Scroll to visible form
+                if (addTaskForm.classList.contains('show')) {
+                    addTaskForm.scrollIntoView({ behavior: 'smooth' });
+                } else if (addCurrentForm.classList.contains('show')) {
+                    addCurrentForm.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        }
+    });
+</script>
+{% endblock %} 

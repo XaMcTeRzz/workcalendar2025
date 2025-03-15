@@ -1,0 +1,25 @@
+{
+  "name": "calendar-app",
+  "version": "1.0.0",
+  "description": "Календар задач з інтеграцією Telegram",
+  "main": "app.py",
+  "scripts": {
+    "start": "python app.py"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yourusername/calendar-app.git"
+  },
+  "keywords": [
+    "calendar",
+    "tasks",
+    "telegram",
+    "flask",
+    "python"
+  ],
+  "author": "Your Name",
+  "license": "MIT"
+} 

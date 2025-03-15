@@ -1,0 +1,8 @@
+{
+    "telegram_bot_token": "",
+    "telegram_chat_id": "",
+    "notification_time": 15,
+    "notifications_enabled": true,
+    "current_tasks_notifications": true,
+    "task_notifications": true
+}

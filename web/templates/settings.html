@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- Desktop View -->
+<div class="d-none d-md-block">
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0"><i class="bi bi-telegram me-2"></i>Налаштування Telegram</h5>
+                </div>
+                <div class="card-body">
+                    <form action="{{ url_for('save_telegram_settings') }}" method="post">
+                        <div class="mb-3">
+                            <label for="botToken" class="form-label">Токен бота</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-key"></i></span>
+                                <input type="text" name="bot_token" id="botToken" class="form-control" 
+                                    value="{{ settings.get('telegram_bot_token', '') }}" 
+                                    placeholder="Введіть токен бота від @BotFather">
+                            </div>
+                            <div class="form-text">Отримайте токен у @BotFather в Telegram</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="chatId" class="form-label">ID чату</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-chat"></i></span>
+                                <input type="text" name="chat_id" id="chatId" class="form-control" 
+                                    value="{{ settings.get('telegram_chat_id', '') }}" 
+                                    placeholder="Введіть ID вашого чату">
+                            </div>
+                            <div class="form-text">Отримайте ID чату у @userinfobot</div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save me-1"></i> Зберегти налаштування
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0"><i class="bi bi-bell me-2"></i>Налаштування сповіщень</h5>
+                </div>
+                <div class="card-body">
+                    <form action="{{ url_for('save_notification_settings') }}" method="post">
+                        <div class="mb-3">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="enableNotifications" name="enable_notifications" 
+                                    {% if settings.get('enable_notifications', True) %}checked{% endif %}>
+                                <label class="form-check-label" for="enableNotifications">Увімкнути сповіщення</label>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="notificationTime" class="form-label">Час сповіщення (хвилин до події)</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-clock"></i></span>
+                                <input type="number" name="notification_time" id="notificationTime" class="form-control" 
+                                    value="{{ settings.get('notification_time', 30) }}" min="5" max="120">
+                                <span class="input-group-text">хв</span>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save me-1"></i> Зберегти налаштування
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Mobile View -->
+<div class="d-block d-md-none">
+    <!-- Telegram Settings -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="card-title mb-0"><i class="bi bi-telegram me-2"></i>Налаштування Telegram</h5>
+        </div>
+        <div class="card-body">
+            <form action="{{ url_for('save_telegram_settings') }}" method="post">
+                <div class="mb-3">
+                    <label for="mobileBotToken" class="form-label">Токен бота</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-key"></i></span>
+                        <input type="text" name="bot_token" id="mobileBotToken" class="form-control" 
+                            value="{{ settings.get('telegram_bot_token', '') }}" 
+                            placeholder="Введіть токен бота">
+                    </div>
+                    <div class="form-text">Отримайте токен у @BotFather</div>
+                </div>
+                <div class="mb-3">
+                    <label for="mobileChatId" class="form-label">ID чату</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-chat"></i></span>
+                        <input type="text" name="chat_id" id="mobileChatId" class="form-control" 
+                            value="{{ settings.get('telegram_chat_id', '') }}" 
+                            placeholder="Введіть ID чату">
+                    </div>
+                    <div class="form-text">Отримайте ID у @userinfobot</div>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-save me-1"></i> Зберегти
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Notification Settings -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="card-title mb-0"><i class="bi bi-bell me-2"></i>Налаштування сповіщень</h5>
+        </div>
+        <div class="card-body">
+            <form action="{{ url_for('save_notification_settings') }}" method="post">
+                <div class="mb-4">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="mobileEnableNotifications" name="enable_notifications" 
+                            {% if settings.get('enable_notifications', True) %}checked{% endif %}>
+                        <label class="form-check-label" for="mobileEnableNotifications">Увімкнути сповіщення</label>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="mobileNotificationTime" class="form-label">Час сповіщення (хвилин до події)</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-clock"></i></span>
+                        <input type="number" name="notification_time" id="mobileNotificationTime" class="form-control" 
+                            value="{{ settings.get('notification_time', 30) }}" min="5" max="120">
+                        <span class="input-group-text">хв</span>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-save me-1"></i> Зберегти
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-header">
+        <h5 class="card-title mb-0"><i class="bi bi-info-circle me-2"></i>Інструкція</h5>
+    </div>
+    <div class="card-body">
+        <div class="accordion" id="instructionAccordion">
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne">
+                        Як налаштувати Telegram бота
+                    </button>
+                </h2>
+                <div id="collapseOne" class="accordion-collapse collapse show" data-bs-parent="#instructionAccordion">
+                    <div class="accordion-body">
+                        <ol class="mb-0">
+                            <li class="mb-2">Відкрийте Telegram і знайдіть @BotFather</li>
+                            <li class="mb-2">Надішліть команду /newbot і дотримуйтесь інструкцій</li>
+                            <li class="mb-2">Отримайте токен бота і скопіюйте його в поле "Токен бота"</li>
+                            <li class="mb-2">Знайдіть @userinfobot і надішліть йому будь-яке повідомлення</li>
+                            <li>Скопіюйте отриманий ID в поле "ID чату"</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo">
+                        Як працюють сповіщення
+                    </button>
+                </h2>
+                <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#instructionAccordion">
+                    <div class="accordion-body">
+                        <p>Система сповіщень працює наступним чином:</p>
+                        <ul class="mb-0">
+                            <li class="mb-2">Сповіщення надсилаються через Telegram</li>
+                            <li class="mb-2">Ви можете налаштувати час сповіщення (за скільки хвилин до події)</li>
+                            <li class="mb-2">Можна окремо вмикати/вимикати сповіщення для задач та поточних задач</li>
+                            <li>Для отримання сповіщень додаток має бути запущений</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
