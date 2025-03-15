@@ -1,14 +1,139 @@
-from flask import Flask, render_template, request, jsonify, redirect, url_for
-import sys
+from flask import Flask, render_template, request, jsonify, redirect, url_for, flash
 import os
 import json
+from datetime import datetime
 
-# Додаємо батьківську директорію до шляху
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# Клас для зберігання даних в пам'яті
+class VercelStorage:
+    def __init__(self):
+        self.tasks = []
+        self.current_tasks = []
+        self.settings = {
+            'telegram_bot_token': '',
+            'telegram_chat_id': '',
+            'notification_time': 15,
+            'notifications_enabled': True,
+            'task_notifications': True,
+            'current_tasks_notifications': True
+        }
+        self.task_id_counter = 1
+        self.current_task_id_counter = 1
+    
+    def add_task(self, title, date=None, time=None):
+        """Add a new task"""
+        task = [self.task_id_counter, title, date, time]
+        self.tasks.append(task)
+        self.task_id_counter += 1
+        return True
+    
+    def add_current_task(self, note):
+        """Add a current task"""
+        task = [self.current_task_id_counter, note]
+        self.current_tasks.append(task)
+        self.current_task_id_counter += 1
+        return True
+    
+    def get_tasks(self):
+        """Get all tasks"""
+        return self.tasks
+    
+    def get_current_tasks(self):
+        """Get all current tasks"""
+        return self.current_tasks
+    
+    def send_current_tasks(self):
+        """Mock sending current tasks to Telegram"""
+        return True
+    
+    def get_settings(self):
+        """Get all settings"""
+        return self.settings
+    
+    def save_settings(self, settings_data):
+        """Save settings"""
+        self.settings = settings_data
+        return True
 
-# Імпортуємо додаток Flask з app.py
-from app import app as flask_app
+# Ініціалізуємо сховище даних
+storage = VercelStorage()
+
+app = Flask(__name__)
+app.secret_key = 'your_secret_key'  # Для flash повідомлень
+
+# Налаштування шляхів до статичних файлів та шаблонів
+app.static_folder = 'static'
+app.template_folder = 'templates'
+
+@app.route('/')
+def index():
+    return render_template('index.html', tasks=storage.get_tasks(), current_tasks=storage.get_current_tasks())
+
+@app.route('/add_task', methods=['POST'])
+def add_task():
+    title = request.form.get('title')
+    date = request.form.get('date') or None
+    time = request.form.get('time') or None
+    
+    if title:
+        storage.add_task(title, date, time)
+        flash('Задачу успішно додано!', 'success')
+    
+    return redirect(url_for('index'))
+
+@app.route('/add_current', methods=['POST'])
+def add_current():
+    note = request.form.get('note')
+    
+    if note:
+        storage.add_current_task(note)
+        flash('Поточну задачу успішно додано!', 'success')
+    
+    return redirect(url_for('index'))
+
+@app.route('/send_to_telegram', methods=['POST'])
+def send_to_telegram():
+    try:
+        storage.send_current_tasks()
+        return jsonify({'success': True, 'message': 'Задачі надіслано в Telegram'})
+    except Exception as e:
+        return jsonify({'success': False, 'message': f'Помилка: {str(e)}'})
+
+@app.route('/settings')
+def settings_page():
+    return render_template('settings.html', settings=storage.get_settings())
+
+@app.route('/save_telegram_settings', methods=['POST'])
+def save_telegram_settings():
+    bot_token = request.form.get('bot_token')
+    chat_id = request.form.get('chat_id')
+    
+    settings_data = storage.get_settings()
+    settings_data['telegram_bot_token'] = bot_token
+    settings_data['telegram_chat_id'] = chat_id
+    
+    storage.save_settings(settings_data)
+    
+    flash('Налаштування Telegram збережено!', 'success')
+    return redirect(url_for('settings_page'))
+
+@app.route('/save_notification_settings', methods=['POST'])
+def save_notification_settings():
+    enable_notifications = 'enable_notifications' in request.form
+    notification_time = int(request.form.get('notification_time', 30))
+    
+    settings_data = storage.get_settings()
+    settings_data['enable_notifications'] = enable_notifications
+    settings_data['notification_time'] = notification_time
+    
+    storage.save_settings(settings_data)
+    
+    flash('Налаштування сповіщень збережено!', 'success')
+    return redirect(url_for('settings_page'))
+
+@app.context_processor
+def inject_current_year():
+    return {'current_year': datetime.now().year}
 
 # Для Vercel Serverless Functions
 def handler(request, context):
-    return flask_app(request['headers']['host'], request['path'], request['httpMethod'], request['body'], request['queryStringParameters']) 
+    return app 
