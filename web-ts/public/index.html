@@ -1,21 +1,65 @@
 <!DOCTYPE html>
-<html lang="uk">
+<html lang="ru">
   <head>
     <meta charset="utf-8" />
     <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#5c6bc0" />
+    <meta name="theme-color" content="#3498db" />
     <meta
       name="description"
-      content="Календар задач з підтримкою Telegram"
+      content="Календар задач - веб-додаток для керування задачами"
     />
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <title>Календар задач</title>
+    <!-- Предотвращение ошибок с белым/черным экраном -->
+    <style>
+      /* Стили для обеспечения базового отображения во время загрузки */
+      body {
+        margin: 0;
+        padding: 0;
+        background-color: #f5f5f5;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+          'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+          sans-serif;
+      }
+      .loading-screen {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        text-align: center;
+        padding: 20px;
+      }
+    </style>
+    <!-- Скрипт для отлова ошибок JavaScript -->
+    <script>
+      window.onerror = function(message, source, lineno, colno, error) {
+        console.error('JavaScript error:', message, source, lineno, colno, error);
+        // Если страница не загрузилась в течение 10 секунд, показываем сообщение
+        return false;
+      };
+    </script>
   </head>
   <body>
-    <noscript>Для роботи цього додатка потрібно включити JavaScript.</noscript>
-    <div id="root"></div>
+    <noscript>Для запуску цього додатку потрібно ввімкнути JavaScript у вашому браузері.</noscript>
+    <div id="root">
+      <!-- Fallback контент, который будет показан, если React не загрузится -->
+      <div class="loading-screen">
+        <h2>Завантаження додатку "Календар задач"...</h2>
+        <p>Якщо додаток не завантажується протягом 10 секунд, спробуйте оновити сторінку.</p>
+        <button onclick="window.location.reload()">Оновити сторінку</button>
+      </div>
+    </div>
+    <!-- Скрипт для проверки загрузки приложения -->
+    <script>
+      setTimeout(function() {
+        const root = document.getElementById('root');
+        if (root && root.children.length === 1 && root.children[0].className === 'loading-screen') {
+          console.log('Приложение не загрузилось за 10 секунд');
+        }
+      }, 10000);
+    </script>
   </body>
 </html> 

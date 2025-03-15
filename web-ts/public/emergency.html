@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Календар задач - Аварійна сторінка</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f5f5f5;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      color: #333;
+    }
+
+    .container {
+      max-width: 700px;
+      padding: 30px;
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+
+    h1 {
+      color: #3498db;
+      margin-bottom: 20px;
+    }
+
+    .status {
+      font-weight: bold;
+      margin: 20px 0;
+      padding: 10px;
+      border-radius: 4px;
+      background-color: #e8f4fd;
+    }
+
+    button {
+      background-color: #3498db;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin: 10px;
+      font-size: 16px;
+    }
+
+    button:hover {
+      background-color: #2980b9;
+    }
+
+    .action-buttons {
+      margin-top: 20px;
+    }
+
+    .check-results {
+      margin-top: 20px;
+      text-align: left;
+      padding: 15px;
+      background-color: #f9f9f9;
+      border-radius: 4px;
+      font-family: monospace;
+      white-space: pre-wrap;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Календар задач</h1>
+    <p>Це аварійна сторінка для перевірки роботи застосунку на Vercel</p>
+    
+    <div class="status" id="status">
+      Очікування перевірки...
+    </div>
+    
+    <div class="action-buttons">
+      <button onclick="checkScripts()">Перевірити скрипти</button>
+      <button onclick="goToMainApp()">Перейти до додатку</button>
+      <button onclick="clearCache()">Очистити кеш</button>
+    </div>
+    
+    <div class="check-results" id="results"></div>
+  </div>
+
+  <script>
+    // Функція для перевірки скриптів
+    function checkScripts() {
+      const status = document.getElementById('status');
+      const results = document.getElementById('results');
+      
+      status.style.backgroundColor = '#fff3cd';
+      status.textContent = 'Виконується перевірка...';
+      
+      results.textContent = '';
+      
+      // Перевіряємо доступність основних файлів
+      const filesToCheck = [
+        '/index.html',
+        '/static/js/main.js',
+        '/static/css/main.css',
+        '/manifest.json'
+      ];
+      
+      let checksCompleted = 0;
+      let allPassed = true;
+      
+      filesToCheck.forEach(file => {
+        fetch(file)
+          .then(response => {
+            results.textContent += `✓ ${file}: ${response.status} ${response.ok ? 'OK' : 'FAILED'}\n`;
+            if (!response.ok) allPassed = false;
+          })
+          .catch(error => {
+            results.textContent += `✗ ${file}: ERROR - ${error.message}\n`;
+            allPassed = false;
+          })
+          .finally(() => {
+            checksCompleted++;
+            if (checksCompleted === filesToCheck.length) {
+              if (allPassed) {
+                status.style.backgroundColor = '#d4edda';
+                status.textContent = 'Всі перевірки пройдено успішно!';
+              } else {
+                status.style.backgroundColor = '#f8d7da';
+                status.textContent = 'Виявлено проблеми! Дивіться результати нижче.';
+              }
+            }
+          });
+      });
+      
+      // Збираємо інформацію про браузер
+      results.textContent += `\nБраузер: ${navigator.userAgent}\n`;
+      results.textContent += `Запит виконано: ${new Date().toLocaleString()}\n`;
+    }
+    
+    // Перехід до основного додатку
+    function goToMainApp() {
+      window.location.href = '/';
+    }
+    
+    // Очищення кешу
+    function clearCache() {
+      const status = document.getElementById('status');
+      
+      if ('caches' in window) {
+        status.style.backgroundColor = '#fff3cd';
+        status.textContent = 'Очищення кешу...';
+        
+        caches.keys().then(cacheNames => {
+          return Promise.all(
+            cacheNames.map(cacheName => {
+              return caches.delete(cacheName);
+            })
+          );
+        }).then(() => {
+          status.style.backgroundColor = '#d4edda';
+          status.textContent = 'Кеш очищено! Оновіть сторінку.';
+        }).catch(error => {
+          status.style.backgroundColor = '#f8d7da';
+          status.textContent = 'Помилка при очищенні кешу: ' + error;
+        });
+      } else {
+        status.style.backgroundColor = '#f8d7da';
+        status.textContent = 'API кешування недоступне в цьому браузері';
+      }
+    }
+  </script>
+</body>
+</html> 
