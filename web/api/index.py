@@ -2,44 +2,79 @@ from flask import Flask, render_template, request, jsonify, redirect, url_for, f
 import os
 import json
 from datetime import datetime
+from pymongo import MongoClient
+from bson.objectid import ObjectId
+import os
 
-# Клас для зберігання даних в пам'яті
-class VercelStorage:
+# Клас для роботи з MongoDB
+class MongoDBStorage:
     def __init__(self):
-        self.tasks = []
-        self.current_tasks = []
-        self.settings = {
-            'telegram_bot_token': '',
-            'telegram_chat_id': '',
-            'notification_time': 15,
-            'notifications_enabled': True,
-            'task_notifications': True,
-            'current_tasks_notifications': True
-        }
-        self.task_id_counter = 1
-        self.current_task_id_counter = 1
+        # Отримуємо URI підключення з змінних середовища або використовуємо тестове значення
+        mongo_uri = os.environ.get('MONGODB_URI', 'mongodb+srv://username:password@cluster.mongodb.net/calendar?retryWrites=true&w=majority')
+        
+        # Підключаємося до MongoDB
+        self.client = MongoClient(mongo_uri)
+        self.db = self.client.get_database()
+        
+        # Колекції для зберігання даних
+        self.tasks_collection = self.db.tasks
+        self.current_tasks_collection = self.db.current_tasks
+        self.settings_collection = self.db.settings
+        
+        # Ініціалізуємо налаштування, якщо вони не існують
+        if self.settings_collection.count_documents({}) == 0:
+            self.settings_collection.insert_one({
+                'telegram_bot_token': '',
+                'telegram_chat_id': '',
+                'notification_time': 15,
+                'notifications_enabled': True,
+                'task_notifications': True,
+                'current_tasks_notifications': True
+            })
     
     def add_task(self, title, date=None, time=None):
         """Add a new task"""
-        task = [self.task_id_counter, title, date, time]
-        self.tasks.append(task)
-        self.task_id_counter += 1
-        return True
+        task = {
+            'title': title,
+            'date': date,
+            'time': time,
+            'created_at': datetime.now()
+        }
+        result = self.tasks_collection.insert_one(task)
+        return result.acknowledged
     
     def add_current_task(self, note):
         """Add a current task"""
-        task = [self.current_task_id_counter, note]
-        self.current_tasks.append(task)
-        self.current_task_id_counter += 1
-        return True
+        task = {
+            'note': note,
+            'created_at': datetime.now()
+        }
+        result = self.current_tasks_collection.insert_one(task)
+        return result.acknowledged
     
     def get_tasks(self):
         """Get all tasks"""
-        return self.tasks
+        tasks = []
+        for task in self.tasks_collection.find().sort('created_at', -1):
+            # Перетворюємо MongoDB документ у формат, який очікує шаблон
+            tasks.append([
+                str(task['_id']),  # ID як рядок
+                task['title'],
+                task.get('date'),
+                task.get('time')
+            ])
+        return tasks
     
     def get_current_tasks(self):
         """Get all current tasks"""
-        return self.current_tasks
+        tasks = []
+        for task in self.current_tasks_collection.find().sort('created_at', -1):
+            # Перетворюємо MongoDB документ у формат, який очікує шаблон
+            tasks.append([
+                str(task['_id']),  # ID як рядок
+                task['note']
+            ])
+        return tasks
     
     def send_current_tasks(self):
         """Mock sending current tasks to Telegram"""
@@ -47,18 +82,31 @@ class VercelStorage:
     
     def get_settings(self):
         """Get all settings"""
-        return self.settings
+        settings = self.settings_collection.find_one()
+        if settings:
+            # Видаляємо _id з результату
+            if '_id' in settings:
+                del settings['_id']
+            return settings
+        return {}
     
     def save_settings(self, settings_data):
         """Save settings"""
-        self.settings = settings_data
-        return True
+        # Оновлюємо налаштування
+        result = self.settings_collection.update_one({}, {'$set': settings_data})
+        return result.acknowledged
 
 # Ініціалізуємо сховище даних
-storage = VercelStorage()
+try:
+    storage = MongoDBStorage()
+except Exception as e:
+    print(f"Error connecting to MongoDB: {e}")
+    # Якщо не вдалося підключитися до MongoDB, використовуємо резервне зберігання в пам'яті
+    from vercel_memory_storage import VercelStorage
+    storage = VercelStorage()
 
 app = Flask(__name__)
-app.secret_key = 'your_secret_key'  # Для flash повідомлень
+app.secret_key = os.environ.get('SECRET_KEY', 'your_secret_key')  # Для flash повідомлень
 
 # Налаштування шляхів до статичних файлів та шаблонів
 app.static_folder = 'static'
