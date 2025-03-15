@@ -1,12 +1,17 @@
 import React, { useState } from 'react';
 import { useTask } from '../contexts/TaskContext';
+import { useNotification } from '../components/NotificationService';
 import Button from '../components/Button';
 import FAB from '../components/FAB';
+import TaskModal from '../components/TaskModal';
+import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 
 const Calendar: React.FC = () => {
-  const { tasks } = useTask();
+  const { tasks, addTask } = useTask();
+  const { showNotification } = useNotification();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [showAddModal, setShowAddModal] = useState(false);
+  const [selectedDate, setSelectedDate] = useState('');
   
   // Вспомогательные функции для работы с календарем
   const getMonthName = (date: Date) => {
@@ -46,6 +51,45 @@ const Calendar: React.FC = () => {
     });
   };
   
+  // Обработка добавления задачи
+  const handleAddTask = async (task: {
+    title: string;
+    description: string;
+    date: string;
+    priority: 'low' | 'medium' | 'high';
+    category: string;
+  }) => {
+    try {
+      await addTask({
+        ...task,
+        completed: false,
+      });
+      setShowAddModal(false);
+      
+      const formattedDate = new Date(task.date).toLocaleDateString();
+      showNotification(
+        `Задача "${task.title}" додана на ${formattedDate}`, 
+        'success'
+      );
+    } catch (error) {
+      showNotification('Помилка при додаванні задачі', 'error');
+    }
+  };
+  
+  // Обработка клика по дню
+  const handleDayClick = (date: string) => {
+    setSelectedDate(date);
+    setShowAddModal(true);
+    
+    // Показываем уведомление о выбранной дате
+    const formattedDate = new Date(date).toLocaleDateString();
+    showNotification(
+      `Створення задачі на ${formattedDate}`, 
+      'info',
+      2000
+    );
+  };
+  
   // Формирование сетки календаря
   const renderCalendarDays = () => {
     const daysInMonth = getDaysInMonth(currentMonth);
@@ -62,11 +106,13 @@ const Calendar: React.FC = () => {
       const date = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
       const dateString = date.toISOString().split('T')[0];
       const tasksForDay = tasks.filter(task => task.date === dateString);
+      const isToday = new Date().toISOString().split('T')[0] === dateString;
       
       days.push(
         <div 
           key={day} 
-          className={`calendar-day ${tasksForDay.length > 0 ? 'has-tasks' : ''}`}
+          className={`calendar-day ${tasksForDay.length > 0 ? 'has-tasks' : ''} ${isToday ? 'today' : ''}`}
+          onClick={() => handleDayClick(dateString)}
         >
           <div className="day-number">{day}</div>
           
@@ -99,16 +145,24 @@ const Calendar: React.FC = () => {
         <h1>Календар</h1>
         
         <div className="month-navigation">
-          <Button variant="text" onClick={goToPreviousMonth}>
-            &lt; Попередній
+          <Button 
+            variant="text" 
+            onClick={goToPreviousMonth}
+            startIcon={<FaChevronLeft />}
+          >
+            Попередній
           </Button>
           
           <h2 className="current-month">
             {getMonthName(currentMonth)} {getYear(currentMonth)}
           </h2>
           
-          <Button variant="text" onClick={goToNextMonth}>
-            Наступний &gt;
+          <Button 
+            variant="text" 
+            onClick={goToNextMonth}
+            endIcon={<FaChevronRight />}
+          >
+            Наступний
           </Button>
         </div>
       </div>
@@ -129,7 +183,27 @@ const Calendar: React.FC = () => {
         </div>
       </div>
       
-      <FAB onClick={() => setShowAddModal(true)} />
+      <FAB onClick={() => {
+        const today = new Date().toISOString().split('T')[0];
+        setSelectedDate(today);
+        setShowAddModal(true);
+        showNotification('Створення задачі на сьогодні', 'info', 2000);
+      }} />
+      
+      <TaskModal 
+        isOpen={showAddModal}
+        onClose={() => setShowAddModal(false)}
+        onSave={handleAddTask}
+        initialTask={
+          selectedDate ? {
+            title: '',
+            description: '',
+            date: selectedDate,
+            priority: 'medium',
+            category: '',
+          } : undefined
+        }
+      />
     </div>
   );
 };

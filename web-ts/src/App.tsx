@@ -11,6 +11,7 @@ import NotFound from './pages/NotFound';
 import { UserProvider } from './contexts/UserContext';
 import { TaskProvider } from './contexts/TaskContext';
 import { VoiceInputProvider } from './contexts/VoiceInputContext';
+import NotificationProvider from './components/NotificationService';
 import './styles/App.css';
 
 function App() {
@@ -18,19 +19,21 @@ function App() {
     <UserProvider>
       <TaskProvider>
         <VoiceInputProvider>
-          <Router>
-            <Routes>
-              <Route path="/" element={<Layout />}>
-                <Route index element={<Home />} />
-                <Route path="tasks" element={<Tasks />} />
-                <Route path="calendar" element={<Calendar />} />
-                <Route path="settings" element={<Settings />} />
-                <Route path="statistics" element={<Statistics />} />
-                <Route path="task/:id" element={<TaskDetail />} />
-                <Route path="*" element={<NotFound />} />
-              </Route>
-            </Routes>
-          </Router>
+          <NotificationProvider>
+            <Router>
+              <Routes>
+                <Route path="/" element={<Layout />}>
+                  <Route index element={<Home />} />
+                  <Route path="tasks" element={<Tasks />} />
+                  <Route path="calendar" element={<Calendar />} />
+                  <Route path="settings" element={<Settings />} />
+                  <Route path="statistics" element={<Statistics />} />
+                  <Route path="task/:id" element={<TaskDetail />} />
+                  <Route path="*" element={<NotFound />} />
+                </Route>
+              </Routes>
+            </Router>
+          </NotificationProvider>
         </VoiceInputProvider>
       </TaskProvider>
     </UserProvider>
