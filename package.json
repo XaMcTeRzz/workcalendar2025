@@ -1,0 +1,11 @@
+{
+  "name": "workcalendar",
+  "private": true,
+  "version": "1.0.0",
+  "workspaces": ["web-ts"],
+  "scripts": {
+    "build": "cd web-ts && npm install && npm run build",
+    "dev": "cd web-ts && npm run dev",
+    "start": "cd web-ts && npm run preview"
+  }
+} 

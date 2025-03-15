@@ -2,10 +2,8 @@
 .github
 .vscode
 node_modules
-**/node_modules
-**/dist
-**/.env
-**/.env.*
-**/coverage
-**/.husky
+coverage
+.env
+.env.*
+.husky
 README.md 
