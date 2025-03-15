@@ -1,5 +1,5 @@
-from index import app
+from index import app, handler
 
 # Для Vercel Serverless Functions
-def handler(request, context):
-    return app 
+# Експортуємо обидві функції
+__all__ = ['app', 'handler'] 

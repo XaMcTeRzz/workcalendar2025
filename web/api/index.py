@@ -72,7 +72,10 @@ app.template_folder = 'templates'
 
 @app.route('/')
 def index():
-    return render_template('index.html', tasks=storage.get_tasks(), current_tasks=storage.get_current_tasks())
+    try:
+        return render_template('index.html', tasks=storage.get_tasks(), current_tasks=storage.get_current_tasks())
+    except Exception as e:
+        return jsonify({"error": str(e), "type": type(e).__name__}), 500
 
 @app.route('/add_task', methods=['POST'])
 def add_task():
@@ -106,7 +109,10 @@ def send_to_telegram():
 
 @app.route('/settings')
 def settings_page():
-    return render_template('settings.html', settings=storage.get_settings())
+    try:
+        return render_template('settings.html', settings=storage.get_settings())
+    except Exception as e:
+        return jsonify({"error": str(e), "type": type(e).__name__}), 500
 
 @app.route('/save_telegram_settings', methods=['POST'])
 def save_telegram_settings():
@@ -146,11 +152,28 @@ def debug():
     return jsonify({
         'env': dict(os.environ),
         'tasks': storage.get_tasks(),
-        'current_tasks': storage.get_current_tasks()
+        'current_tasks': storage.get_current_tasks(),
+        'app_config': {
+            'static_folder': app.static_folder,
+            'template_folder': app.template_folder,
+            'debug': app.debug
+        }
     })
+
+# Простий маршрут для перевірки
+@app.route('/ping')
+def ping():
+    return "pong"
+
+# Тестова HTML-сторінка
+@app.route('/test')
+def test_page():
+    with open('index.html', 'r') as f:
+        return f.read()
 
 # Для Vercel Serverless Functions
 app.debug = True
 
-# Важливо: це має бути останнім рядком
-app = app 
+# Правильний експорт для Vercel
+def handler(request, context):
+    return app 
