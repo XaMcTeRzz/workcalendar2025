@@ -1,137 +1,78 @@
 import axios from 'axios';
 import { Task, CurrentTask, Settings, ApiResponse } from '../types';
 
-// Базовий URL для API
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
-
-// Створюємо екземпляр axios з базовими налаштуваннями
+// Создаем базовый инстанс axios
 const api = axios.create({
-  baseURL: API_URL,
+  baseURL: import.meta.env.VITE_APP_API_URL || '/api',
+  timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
+    'Accept': 'application/json',
   },
 });
 
-// Допоміжна функція для обробки відповіді
-async function handleResponse<T>(response: Response): Promise<T> {
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.message || 'Помилка запиту до сервера');
-  }
-  
-  const data: ApiResponse<T> = await response.json();
-  return data.data;
-}
-
-// Tasks API
-export async function fetchTasks(): Promise<Task[]> {
-  const response = await fetch(`${API_URL}/tasks`);
-  return handleResponse<Task[]>(response);
-}
-
-export async function createTask(task: Omit<Task, 'id'>): Promise<Task> {
-  const response = await fetch(`${API_URL}/tasks`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(task),
-  });
-  
-  return handleResponse<Task>(response);
-}
-
-export async function updateTask(taskId: number, task: Partial<Task>): Promise<Task> {
-  const response = await fetch(`${API_URL}/tasks/${taskId}`, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(task),
-  });
-  
-  return handleResponse<Task>(response);
-}
-
-export async function deleteTask(taskId: number): Promise<void> {
-  const response = await fetch(`${API_URL}/tasks/${taskId}`, {
-    method: 'DELETE',
-  });
-  
-  return handleResponse<void>(response);
-}
-
-// Current Task API
-export async function fetchCurrentTasks(): Promise<CurrentTask[]> {
-  const response = await fetch(`${API_URL}/current-tasks`);
-  return handleResponse<CurrentTask[]>(response);
-}
-
-export async function fetchCurrentTask(taskId: number): Promise<CurrentTask> {
-  const response = await fetch(`${API_URL}/current-tasks/${taskId}`);
-  return handleResponse<CurrentTask>(response);
-}
-
-export async function createCurrentTask(task: Omit<CurrentTask, 'id' | 'created_at'>): Promise<CurrentTask> {
-  const response = await fetch(`${API_URL}/current-tasks`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(task),
-  });
-  
-  return handleResponse<CurrentTask>(response);
-}
-
-export async function deleteCurrentTask(taskId: number): Promise<void> {
-  const response = await fetch(`${API_URL}/current-tasks/${taskId}`, {
-    method: 'DELETE',
-  });
-  
-  return handleResponse<void>(response);
-}
-
-export const sendToTelegram = async (id: number): Promise<void> => {
-  await api.post(`/current_task/${id}/send`);
+// Сервисы для работы с задачами
+export const fetchTasks = async (): Promise<ApiResponse<Task[]>> => {
+  const response = await api.get('/tasks');
+  return response.data;
 };
 
-// Settings API
-export async function fetchSettings(): Promise<Settings> {
-  const response = await fetch(`${API_URL}/settings`);
-  return handleResponse<Settings>(response);
-}
+export const createTask = async (task: Task): Promise<ApiResponse<Task>> => {
+  const response = await api.post('/tasks', task);
+  return response.data;
+};
 
-export async function updateSettings(settings: Settings): Promise<Settings> {
-  const response = await fetch(`${API_URL}/settings`, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(settings),
-  });
-  
-  return handleResponse<Settings>(response);
-}
+export const updateTask = async (task: Task): Promise<ApiResponse<Task>> => {
+  const response = await api.put(`/tasks/${task.id}`, task);
+  return response.data;
+};
 
-// Legacy services for backward compatibility
-export const TaskService = {
-  getTasks: fetchTasks,
+export const deleteTask = async (id: number): Promise<ApiResponse<void>> => {
+  const response = await api.delete(`/tasks/${id}`);
+  return response.data;
+};
+
+// Сервисы для работы с текущими задачами
+export const fetchCurrentTasks = async (): Promise<ApiResponse<CurrentTask[]>> => {
+  const response = await api.get('/current-tasks');
+  return response.data;
+};
+
+export const createCurrentTask = async (task: CurrentTask): Promise<ApiResponse<CurrentTask>> => {
+  const response = await api.post('/current-tasks', task);
+  return response.data;
+};
+
+export const updateCurrentTask = async (task: CurrentTask): Promise<ApiResponse<CurrentTask>> => {
+  const response = await api.put(`/current-tasks/${task.id}`, task);
+  return response.data;
+};
+
+export const deleteCurrentTask = async (id: number): Promise<ApiResponse<void>> => {
+  const response = await api.delete(`/current-tasks/${id}`);
+  return response.data;
+};
+
+// Сервисы для работы с настройками
+export const fetchSettings = async (): Promise<ApiResponse<Settings>> => {
+  const response = await api.get('/settings');
+  return response.data;
+};
+
+export const updateSettings = async (settings: Settings): Promise<ApiResponse<Settings>> => {
+  const response = await api.put('/settings', settings);
+  return response.data;
+};
+
+export default {
+  fetchTasks,
   createTask,
   updateTask,
   deleteTask,
-};
-
-export const CurrentTaskService = {
-  getCurrentTasks: fetchCurrentTasks,
+  fetchCurrentTasks,
   createCurrentTask,
+  updateCurrentTask,
   deleteCurrentTask,
-  sendToTelegram,
-};
-
-export const SettingsService = {
-  getSettings: fetchSettings,
+  fetchSettings,
   updateSettings,
-};
-
-export default api; 
+}; 
