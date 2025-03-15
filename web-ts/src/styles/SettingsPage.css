@@ -1,0 +1,54 @@
+.settings-page {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+.card {
+  margin-bottom: var(--spacing-lg);
+}
+
+.form-check {
+  display: flex;
+  align-items: center;
+  margin-bottom: var(--spacing-md);
+}
+
+.form-check-input {
+  margin-right: var(--spacing-sm);
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+.form-check-label {
+  cursor: pointer;
+}
+
+.form-text {
+  display: block;
+  margin-top: var(--spacing-xs);
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.mt-4 {
+  margin-top: var(--spacing-xl);
+}
+
+/* Адаптивний дизайн */
+@media (max-width: 768px) {
+  .card {
+    margin-bottom: var(--spacing-md);
+  }
+}
+
+/* Анімації */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+} 

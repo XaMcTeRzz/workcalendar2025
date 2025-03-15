@@ -1,0 +1,42 @@
+.current-task-form-container {
+  margin-bottom: var(--spacing-lg);
+}
+
+.current-task-form {
+  background-color: var(--card-color);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-md);
+  box-shadow: var(--shadow);
+  margin-bottom: var(--spacing-md);
+}
+
+.telegram-actions {
+  margin-top: var(--spacing-md);
+  display: flex;
+  justify-content: flex-end;
+}
+
+.btn-success {
+  background-color: #4caf50;
+  color: white;
+}
+
+.btn-success:hover {
+  background-color: #388e3c;
+}
+
+.btn-success:disabled {
+  background-color: #a5d6a7;
+  cursor: not-allowed;
+}
+
+/* Адаптивний дизайн */
+@media (max-width: 768px) {
+  .telegram-actions {
+    justify-content: center;
+  }
+  
+  .btn {
+    width: 100%;
+  }
+} 
