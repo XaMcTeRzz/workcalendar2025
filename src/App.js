@@ -1,28 +1,31 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { ThemeProvider as MuiThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
+import { ThemeProvider, useTheme } from './context/ThemeContext';
 import Layout from './components/Layout';
 import Calendar from './pages/Calendar';
 import Tasks from './pages/Tasks';
 import TaskDetail from './pages/TaskDetail';
 import Settings from './pages/Settings';
 
-const theme = createTheme({
-  palette: {
-    mode: 'light',
-    primary: {
-      main: '#1976d2',
-    },
-    secondary: {
-      main: '#dc004e',
-    },
-  },
-});
+function AppContent() {
+  const { darkMode } = useTheme();
 
-function App() {
+  const theme = createTheme({
+    palette: {
+      mode: darkMode ? 'dark' : 'light',
+      primary: {
+        main: '#1976d2',
+      },
+      secondary: {
+        main: '#dc004e',
+      },
+    },
+  });
+
   return (
-    <ThemeProvider theme={theme}>
+    <MuiThemeProvider theme={theme}>
       <CssBaseline />
       <Router>
         <Layout>
@@ -34,6 +37,14 @@ function App() {
           </Routes>
         </Layout>
       </Router>
+    </MuiThemeProvider>
+  );
+}
+
+function App() {
+  return (
+    <ThemeProvider>
+      <AppContent />
     </ThemeProvider>
   );
 }
